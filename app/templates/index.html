@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Nuevo gasto — Finanzas{% endblock %}
+{% block content %}
+
+<section class="card">
+  <h1>Nuevo gasto</h1>
+  <form class="form" method="post" action="/expenses">
+    <label>
+      Fecha
+      <input type="date" name="occurred_on" value="{{ today }}" required>
+    </label>
+
+    <label>
+      Monto (COP)
+      <input type="number" name="amount" min="0" step="1" inputmode="numeric"
+             placeholder="0" onwheel="this.blur()" required>
+    </label>
+
+    <label>
+      Categoria
+      <select name="category" required>
+        {% for c in categories %}
+        <option value="{{ c }}">{{ c }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>
+      Descripcion
+      <input type="text" name="description" maxlength="200" placeholder="Opcional">
+    </label>
+
+    <label class="check">
+      <input type="checkbox" name="is_shared" value="true" checked>
+      Gasto compartido (para repartir 66/33 mas adelante)
+    </label>
+
+    <button class="btn" type="submit">Guardar gasto</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Ultimos gastos</h2>
+  {% if expenses %}
+  <ul class="expenses">
+    {% for e in expenses %}
+    <li class="expense">
+      <div class="expense-main">
+        <span class="expense-amount">${{ "{:,.0f}".format(e.amount) }}</span>
+        <span class="expense-cat">{{ e.category }}</span>
+      </div>
+      <div class="expense-meta">
+        <span>{{ e.occurred_on }}</span>
+        {% if e.description %}<span>· {{ e.description }}</span>{% endif %}
+        <span>· {{ e.user_name }}</span>
+        {% if e.is_shared %}<span class="tag">compartido</span>{% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">Aun no hay gastos registrados.</p>
+  {% endif %}
+</section>
+
+{% endblock %}

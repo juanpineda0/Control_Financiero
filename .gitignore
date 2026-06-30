@@ -1,0 +1,23 @@
+# Entornos y secretos
+.venv/
+venv/
+.env
+*.env
+!.env.example
+schema.sql
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Vercel
+.vercel/
+
+# Editores / SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.claude

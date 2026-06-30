@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Entrar — Finanzas{% endblock %}
+{% block content %}
+<div class="card login-card">
+  <h1>Finanzas</h1>
+  <p class="muted">Registro de gastos del dia a dia.</p>
+  {% if error %}
+  <p class="error">{{ error }}</p>
+  {% endif %}
+  <a class="btn btn-google" href="/auth/start">Entrar con Google</a>
+</div>
+{% endblock %}

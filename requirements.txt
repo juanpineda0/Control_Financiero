@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+jinja2
+supabase
+pydantic-settings
+itsdangerous
+python-multipart
+httpx
