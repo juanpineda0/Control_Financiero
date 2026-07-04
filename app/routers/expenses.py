@@ -1,4 +1,6 @@
 """Rutas de gastos: formulario, lista mensual, editar y borrar."""
+from typing import Any, cast
+
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
@@ -33,7 +35,8 @@ def index(request: Request, mes: str | None = None):
     year, month = parse_month_param(mes)
     start, end = month_bounds(year, month)
 
-    gastos = (
+    gastos = cast(
+        "list[dict[str, Any]]",
         get_supabase()
         .table("expenses")
         .select("*")
@@ -42,9 +45,9 @@ def index(request: Request, mes: str | None = None):
         .order("occurred_on", desc=True)
         .order("created_at", desc=True)
         .execute()
-        .data
+        .data,
     )
-    total_mes = sum(g["amount"] for g in gastos)
+    total_mes = sum(int(g["amount"]) for g in gastos)
 
     return templates.TemplateResponse(
         request,
