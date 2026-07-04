@@ -64,8 +64,27 @@ h2 { font-size: 1.05rem; margin: 0 0 12px; }
   border-radius: 10px;
 }
 .form input:focus, .form select:focus { outline: 2px solid var(--accent-strong); border-color: transparent; }
+.form select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239aa0aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
 .check { flex-direction: row !important; align-items: center; gap: 10px !important; color: var(--text) !important; }
 .check input { width: auto; }
+
+input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
 
 .btn {
   display: inline-block;
@@ -97,18 +116,23 @@ h2 { font-size: 1.05rem; margin: 0 0 12px; }
 .expense-meta { color: var(--muted); font-size: 0.82rem; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
 .tag { background: var(--border); color: var(--text); padding: 1px 7px; border-radius: 999px; font-size: 0.72rem; }
 
-.expense-actions { display: flex; gap: 12px; margin-top: 6px; }
+.expense-actions { display: flex; gap: 8px; margin-top: 8px; }
 .expense-actions a, .expense-actions .link-btn {
-  color: var(--muted);
-  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  color: var(--text);
+  background: var(--border);
+  font-size: 0.78rem;
   text-decoration: none;
-  background: none;
   border: none;
-  padding: 0;
+  padding: 5px 12px;
+  border-radius: 999px;
   cursor: pointer;
   font-family: inherit;
 }
-.expense-actions a:hover, .expense-actions .link-btn:hover { color: var(--text); }
+.expense-actions a:hover { background: #363b46; }
+.expense-actions .link-btn { color: var(--error); }
+.expense-actions .link-btn:hover { background: rgba(248, 113, 113, 0.16); }
 
 .tabbar {
   display: flex;
