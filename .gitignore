@@ -6,6 +6,9 @@ venv/
 !.env.example
 schema.sql
 
+# Data personal (el repo sera publico)
+*.xlsx
+
 # Python
 __pycache__/
 *.py[cod]
