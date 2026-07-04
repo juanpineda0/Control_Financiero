@@ -1,7 +1,7 @@
-"""Lista de categorias para el desplegable del formulario.
+"""Listas para los desplegables del formulario de gastos.
 
-Por ahora es una constante (facil de editar). Mas adelante podemos moverla a una tabla
-en la base de datos para editarla sin tocar el codigo.
+Por ahora son constantes (faciles de editar). Mas adelante podemos moverlas a una tabla
+en la base de datos para editarlas sin tocar el codigo.
 """
 
 CATEGORIES: list[str] = [
@@ -19,3 +19,6 @@ CATEGORIES: list[str] = [
     "Hogar",
     "Otros",
 ]
+
+# El primero es el metodo por defecto en el formulario.
+PAYMENT_METHODS: list[str] = ["Efectivo", "T. Debito", "T. Credito"]

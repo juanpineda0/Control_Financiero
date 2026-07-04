@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Editar gasto — Finanzas{% endblock %}
+{% block content %}
+
+<section class="card">
+  <h1>Editar gasto</h1>
+  <form class="form" method="post" action="/expenses/{{ expense.id }}/editar">
+    <input type="hidden" name="mes" value="{{ mes }}">
+    <label>
+      Fecha
+      <input type="date" name="occurred_on" value="{{ expense.occurred_on }}" required>
+    </label>
+
+    <label>
+      Monto (COP)
+      <input type="number" name="amount" min="0" step="1" inputmode="numeric"
+             value="{{ expense.amount }}" onwheel="this.blur()" required>
+    </label>
+
+    <label>
+      Categoria
+      <select name="category" required>
+        {% for c in categories %}
+        <option value="{{ c }}" {% if c == expense.category %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>
+      Metodo de pago
+      <select name="payment_method">
+        {% for m in payment_methods %}
+        <option value="{{ m }}" {% if m == expense.payment_method %}selected{% endif %}>{{ m }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>
+      Descripcion
+      <input type="text" name="description" maxlength="200" value="{{ expense.description or '' }}">
+    </label>
+
+    <label class="check">
+      <input type="checkbox" name="is_shared" value="true" {% if expense.is_shared %}checked{% endif %}>
+      Gasto compartido
+    </label>
+
+    <button class="btn" type="submit">Guardar cambios</button>
+  </form>
+
+  <form method="post" action="/expenses/{{ expense.id }}/eliminar"
+        onsubmit="return confirm('Borrar este gasto?');">
+    <input type="hidden" name="mes" value="{{ mes }}">
+    <button type="submit" class="btn btn-danger">Borrar gasto</button>
+  </form>
+
+  <a href="/?mes={{ mes }}" class="back-link">&larr; Volver</a>
+</section>
+
+{% endblock %}

@@ -16,6 +16,11 @@
     </nav>
     {% endif %}
   </header>
+  {% if user %}
+  <nav class="tabbar">
+    <a href="/" class="tab active">Gastos</a>
+  </nav>
+  {% endif %}
   <main class="container">
     {% block content %}{% endblock %}
   </main>
