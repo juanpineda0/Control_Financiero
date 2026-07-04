@@ -11,17 +11,22 @@ OAuth), despliegue gratis en **Vercel**.
 
 ## Estructura
 ```
-api/index.py        Entrada para Vercel (expone la app FastAPI)
-app/main.py         Rutas: login, callback, logout, "/", POST /expenses, /health
-app/auth.py         OAuth Google (PKCE) + sesión por cookie firmada (30 días) + lista blanca
-app/db.py           Cliente de Supabase (service-role)
-app/config.py       Variables de entorno
-app/categories.py   Lista de categorías del desplegable
-app/templates/      base.html, login.html, index.html
-app/static/         styles.css
-schema.sql          Tabla `expenses` (correr en Supabase)
-vercel.json         Config de despliegue
+api/index.py           Entrada para Vercel (expone la app FastAPI)
+app/main.py            Ensambla los routers, estáticos y expone /health
+app/routers/auth.py    Rutas: login, callback, logout
+app/routers/expenses.py Rutas: "/", POST /expenses, editar y borrar un gasto
+app/auth.py             OAuth Google (PKCE) + sesión por cookie firmada (30 días) + lista blanca
+app/db.py               Cliente de Supabase (service-role)
+app/config.py           Variables de entorno
+app/categories.py       Categorías y métodos de pago del desplegable
+app/dates.py            Zona horaria de Colombia y utilidades de mes
+app/templating.py       Jinja2Templates compartida + filtro `cop` (formato de pesos)
+app/templates/          base.html, login.html, index.html, edit_expense.html
+app/static/             styles.css
+schema.sql              Esquema de la tabla `expenses` (correr en Supabase, local/gitignored)
+vercel.json             Config de despliegue
 .github/workflows/keepalive.yml   Cron diario que evita la pausa de Supabase
+docs/ROADMAP.md          Hoja de ruta de las próximas fases
 ```
 
 ---

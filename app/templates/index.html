@@ -1,10 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Nuevo gasto — Finanzas{% endblock %}
+{% block title %}Gastos — Finanzas{% endblock %}
 {% block content %}
 
 <section class="card">
   <h1>Nuevo gasto</h1>
   <form class="form" method="post" action="/expenses">
+    <input type="hidden" name="mes" value="{{ mes_actual }}">
     <label>
       Fecha
       <input type="date" name="occurred_on" value="{{ today }}" required>
@@ -26,6 +27,15 @@
     </label>
 
     <label>
+      Metodo de pago
+      <select name="payment_method">
+        {% for m in payment_methods %}
+        <option value="{{ m }}">{{ m }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>
       Descripcion
       <input type="text" name="description" maxlength="200" placeholder="Opcional">
     </label>
@@ -40,26 +50,41 @@
 </section>
 
 <section class="card">
-  <h2>Ultimos gastos</h2>
+  <div class="month-nav">
+    <a href="/?mes={{ mes_anterior }}" class="month-nav-btn" aria-label="Mes anterior">&lsaquo;</a>
+    <h2>{{ mes_label }}</h2>
+    <a href="/?mes={{ mes_siguiente }}" class="month-nav-btn" aria-label="Mes siguiente">&rsaquo;</a>
+  </div>
+  <p class="month-total">Total del mes: <strong>{{ total_mes | cop }}</strong></p>
+
   {% if expenses %}
   <ul class="expenses">
     {% for e in expenses %}
     <li class="expense">
       <div class="expense-main">
-        <span class="expense-amount">${{ "{:,.0f}".format(e.amount) }}</span>
+        <span class="expense-amount">{{ e.amount | cop }}</span>
         <span class="expense-cat">{{ e.category }}</span>
       </div>
       <div class="expense-meta">
         <span>{{ e.occurred_on }}</span>
-        {% if e.description %}<span>· {{ e.description }}</span>{% endif %}
-        <span>· {{ e.user_name }}</span>
+        {% if e.description %}<span>&middot; {{ e.description }}</span>{% endif %}
+        <span>&middot; {{ e.user_name }}</span>
+        <span class="tag">{{ e.payment_method }}</span>
         {% if e.is_shared %}<span class="tag">compartido</span>{% endif %}
+      </div>
+      <div class="expense-actions">
+        <a href="/expenses/{{ e.id }}/editar?mes={{ mes_actual }}">Editar</a>
+        <form method="post" action="/expenses/{{ e.id }}/eliminar"
+              onsubmit="return confirm('Borrar este gasto?');">
+          <input type="hidden" name="mes" value="{{ mes_actual }}">
+          <button type="submit" class="link-btn">Borrar</button>
+        </form>
       </div>
     </li>
     {% endfor %}
   </ul>
   {% else %}
-  <p class="muted">Aun no hay gastos registrados.</p>
+  <p class="muted">Sin gastos registrados este mes.</p>
   {% endif %}
 </section>
 

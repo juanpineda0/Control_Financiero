@@ -96,3 +96,52 @@ h2 { font-size: 1.05rem; margin: 0 0 12px; }
 .expense-cat { color: var(--muted); font-size: 0.9rem; }
 .expense-meta { color: var(--muted); font-size: 0.82rem; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
 .tag { background: var(--border); color: var(--text); padding: 1px 7px; border-radius: 999px; font-size: 0.72rem; }
+
+.expense-actions { display: flex; gap: 12px; margin-top: 6px; }
+.expense-actions a, .expense-actions .link-btn {
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+.expense-actions a:hover, .expense-actions .link-btn:hover { color: var(--text); }
+
+.tabbar {
+  display: flex;
+  gap: 4px;
+  padding: 0 18px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.tab {
+  padding: 10px 14px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+.tab.active { color: var(--text); border-bottom-color: var(--accent); }
+
+.month-nav { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 4px; }
+.month-nav h2 { margin: 0; min-width: 160px; text-align: center; }
+.month-nav-btn {
+  color: var(--text);
+  text-decoration: none;
+  font-size: 1.4rem;
+  line-height: 1;
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+.month-nav-btn:hover { background: var(--border); }
+.month-total { text-align: center; color: var(--muted); margin: 0 0 14px; }
+
+.btn-danger { background: var(--error); color: #2b0b0b; margin-top: 14px; }
+.btn-danger:hover { background: #ef4444; }
+.back-link { display: inline-block; margin-top: 14px; color: var(--muted); text-decoration: none; font-size: 0.9rem; }
+.back-link:hover { color: var(--text); }
