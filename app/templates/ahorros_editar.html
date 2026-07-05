@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Editar meta — Finanzas{% endblock %}
+{% block content %}
+
+<section class="card">
+  <h1>Editar meta</h1>
+  <form class="form" method="post" action="/ahorros/{{ meta.id }}/editar">
+    <label>
+      Nombre
+      <input type="text" name="name" maxlength="80" value="{{ meta.name }}" required>
+    </label>
+
+    <label>
+      Tipo
+      <select name="kind">
+        {% for k in goal_kinds %}
+        <option value="{{ k }}" {% if k == meta.kind %}selected{% endif %}>
+          {{ "Ahorro" if k == "ahorro" else "Deuda" }}
+        </option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>
+      Monto objetivo (COP)
+      <input type="number" name="target_amount" min="1" step="1" inputmode="numeric"
+             value="{{ meta.target_amount }}" onwheel="this.blur()" required>
+    </label>
+
+    <label>
+      Fecha objetivo
+      <input type="date" name="target_date" value="{{ meta.target_date or '' }}">
+    </label>
+
+    <label>
+      Emoji
+      <input type="text" name="emoji" maxlength="4" value="{{ meta.emoji or '' }}">
+    </label>
+
+    <button class="btn" type="submit">Guardar cambios</button>
+  </form>
+
+  <a href="/ahorros/{{ meta.id }}" class="back-link">&larr; Volver</a>
+</section>
+
+{% endblock %}

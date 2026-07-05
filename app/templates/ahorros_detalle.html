@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}{{ meta.name }} — Finanzas{% endblock %}
+{% block content %}
+
+<section class="card">
+  <div class="goal-header">
+    <h1>{% if meta.emoji %}{{ meta.emoji }} {% endif %}{{ meta.name }}</h1>
+    {% if estado %}
+    <span class="goal-badge is-{{ estado }}">
+      {% if estado == "cumplida" %}Cumplida{% elif estado == "atrasado" %}Atrasado{% else %}Al dia{% endif %}
+    </span>
+    {% endif %}
+  </div>
+
+  <div class="goal-progress">
+    <div class="goal-progress-fill" style="width: {{ progreso }}%"></div>
+  </div>
+
+  {% if meta.kind == "deuda" %}
+  <p class="goal-amounts">Abonado <strong>{{ ahorrado | cop }}</strong>
+    &middot; Restante <strong>{{ restante | cop }}</strong></p>
+  {% if fecha_estimada %}
+  <p class="muted goal-detail">Pago estimado al ritmo actual: {{ fecha_estimada }}</p>
+  {% endif %}
+  {% else %}
+  <p class="goal-amounts">{{ ahorrado | cop }} <span class="muted">/ {{ meta.target_amount | cop }}</span></p>
+  {% if meta.target_date %}<p class="muted goal-detail">Fecha objetivo: {{ meta.target_date }}</p>{% endif %}
+  {% if cuota_sugerida %}
+  <p class="muted goal-detail">Cuota sugerida: {{ cuota_sugerida | cop }}/mes</p>
+  {% endif %}
+  {% endif %}
+
+  {% if desglose %}
+  <p class="goal-detail muted">
+    {% for persona, monto in desglose.items() %}{{ persona }}: {{ monto | cop
+      }}{% if not loop.last %} &middot; {% endif %}{% endfor %}
+  </p>
+  {% endif %}
+
+  <div class="goal-actions">
+    <a href="/ahorros/{{ meta.id }}/editar">Editar</a>
+    {% if puede_borrar %}
+    <form method="post" action="/ahorros/{{ meta.id }}/borrar"
+          onsubmit="return confirm('Borrar esta meta?');">
+      <button type="submit" class="link-btn is-danger">Borrar</button>
+    </form>
+    {% else %}
+    <form method="post" action="/ahorros/{{ meta.id }}/archivar"
+          onsubmit="return confirm('Archivar esta meta?');">
+      <button type="submit" class="link-btn">Archivar</button>
+    </form>
+    {% endif %}
+  </div>
+</section>
+
+<section class="card">
+  <h2>Registrar aporte o retiro</h2>
+  <form class="form" method="post" action="/ahorros/{{ meta.id }}/aportes">
+    <label>
+      Tipo
+      <select name="tipo">
+        <option value="aporte">Aporte</option>
+        <option value="retiro">Retiro</option>
+      </select>
+    </label>
+
+    <label>
+      Fecha
+      <input type="date" name="occurred_on" value="{{ today }}" required>
+    </label>
+
+    <label>
+      Monto (COP)
+      <input type="number" name="amount" min="1" step="1" inputmode="numeric"
+             placeholder="0" onwheel="this.blur()" required>
+    </label>
+
+    <label>
+      Nota
+      <input type="text" name="note" maxlength="200" placeholder="Opcional">
+    </label>
+
+    <button class="btn" type="submit">Guardar</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Historial</h2>
+  {% if aportes %}
+  <ul class="expenses">
+    {% for a in aportes %}
+    <li class="expense">
+      <div class="expense-main">
+        <span class="expense-amount {{ 'is-retiro' if a.amount < 0 else 'is-aporte' }}">
+          {{ '-' if a.amount < 0 else '+' }}{{ a.amount | abs | cop }}
+        </span>
+        <span class="expense-cat">{{ a.user_name }}</span>
+      </div>
+      <div class="expense-meta">
+        <span>{{ a.occurred_on }}</span>
+        {% if a.note %}<span>&middot; {{ a.note }}</span>{% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">Sin aportes registrados todavia.</p>
+  {% endif %}
+</section>
+
+<a href="/ahorros" class="back-link">&larr; Volver</a>
+
+{% endblock %}

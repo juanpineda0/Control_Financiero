@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Ahorros — Finanzas{% endblock %}
+{% block content %}
+
+<section class="card">
+  <h1>Nueva meta</h1>
+  <form class="form" method="post" action="/ahorros/nueva">
+    <label>
+      Nombre
+      <input type="text" name="name" maxlength="80" required>
+    </label>
+
+    <label>
+      Tipo
+      <select name="kind">
+        {% for k in goal_kinds %}
+        <option value="{{ k }}">{{ "Ahorro" if k == "ahorro" else "Deuda" }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>
+      Monto objetivo (COP)
+      <input type="number" name="target_amount" min="1" step="1" inputmode="numeric"
+             placeholder="0" onwheel="this.blur()" required>
+    </label>
+
+    <label>
+      Fecha objetivo
+      <input type="date" name="target_date">
+    </label>
+
+    <label>
+      Emoji
+      <input type="text" name="emoji" maxlength="4" placeholder="Opcional">
+    </label>
+
+    <button class="btn" type="submit">Crear meta</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Metas activas</h2>
+  {% if tarjetas %}
+  <ul class="goals">
+    {% for t in tarjetas %}
+    <li class="goal-card">
+      <a class="goal-link" href="/ahorros/{{ t.meta.id }}">
+        <div class="goal-header">
+          <span class="goal-name">{% if t.meta.emoji %}{{ t.meta.emoji }} {% endif %}{{ t.meta.name }}</span>
+          {% if t.estado %}
+          <span class="goal-badge is-{{ t.estado }}">
+            {% if t.estado == "cumplida" %}Cumplida{% elif t.estado == "atrasado" %}Atrasado{% else %}Al dia{% endif %}
+          </span>
+          {% endif %}
+        </div>
+
+        <div class="goal-progress">
+          <div class="goal-progress-fill" style="width: {{ t.progreso }}%"></div>
+        </div>
+
+        {% if t.meta.kind == "deuda" %}
+        <p class="goal-amounts">Abonado <strong>{{ t.ahorrado | cop }}</strong>
+          &middot; Restante <strong>{{ t.restante | cop }}</strong></p>
+        {% if t.fecha_estimada %}
+        <p class="muted goal-detail">Pago estimado: {{ t.fecha_estimada }}</p>
+        {% endif %}
+        {% else %}
+        <p class="goal-amounts">{{ t.ahorrado | cop }}
+          <span class="muted">/ {{ t.meta.target_amount | cop }}</span></p>
+        {% if t.cuota_sugerida %}
+        <p class="muted goal-detail">Cuota sugerida: {{ t.cuota_sugerida | cop }}/mes</p>
+        {% endif %}
+        {% endif %}
+
+        {% if t.desglose %}
+        <p class="goal-detail muted">
+          {% for persona, monto in t.desglose.items() %}{{ persona }}: {{ monto | cop
+            }}{% if not loop.last %} &middot; {% endif %}{% endfor %}
+        </p>
+        {% endif %}
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">Sin metas activas todavia.</p>
+  {% endif %}
+</section>
+
+{% if archivadas %}
+<section class="card">
+  <h2>Archivadas</h2>
+  <ul class="goals-archived">
+    {% for a in archivadas %}
+    <li class="goal-archived-row">
+      <span>{% if a.emoji %}{{ a.emoji }} {% endif %}{{ a.name }}</span>
+      <form method="post" action="/ahorros/{{ a.id }}/reactivar">
+        <button type="submit" class="chip-btn">Reactivar</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% endblock %}

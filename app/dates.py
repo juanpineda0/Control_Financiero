@@ -49,3 +49,12 @@ def shift_month(year: int, month: int, delta: int) -> str:
 
 def month_label(year: int, month: int) -> str:
     return f"{MESES[month - 1]} {year}"
+
+
+def add_months(d: date, n: int) -> date:
+    """Suma `n` meses a una fecha, recortando el dia si el mes destino es mas corto."""
+    total = d.year * 12 + (d.month - 1) + n
+    new_year, new_month = divmod(total, 12)
+    new_month += 1
+    new_day = min(d.day, monthrange(new_year, new_month)[1])
+    return date(new_year, new_month, new_day)

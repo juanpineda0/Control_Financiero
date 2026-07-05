@@ -5,24 +5,49 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Finanzas{% endblock %}</title>
   <link rel="stylesheet" href="/static/styles.css">
+  <script>
+    (function () {
+      var tema = localStorage.getItem("tema") || "dark";
+      document.documentElement.setAttribute("data-theme", tema);
+    })();
+  </script>
 </head>
 <body>
   <header class="topbar">
     <span class="brand">💸 Finanzas</span>
-    {% if user %}
     <nav class="nav">
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Cambiar tema claro/oscuro">🌙</button>
+      {% if user %}
       <span class="who">{{ user.name }}</span>
       <a class="logout" href="/logout">Salir</a>
+      {% endif %}
     </nav>
-    {% endif %}
   </header>
   {% if user %}
   <nav class="tabbar">
-    <a href="/" class="tab active">Gastos</a>
+    <a href="/" class="tab {% if active_tab == 'gastos' %}active{% endif %}">Gastos</a>
+    <a href="/ahorros" class="tab {% if active_tab == 'ahorros' %}active{% endif %}">Ahorros</a>
   </nav>
   {% endif %}
   <main class="container">
     {% block content %}{% endblock %}
   </main>
+  <script>
+    (function () {
+      var boton = document.getElementById("theme-toggle");
+      function actualizarIcono() {
+        var tema = document.documentElement.getAttribute("data-theme");
+        boton.textContent = tema === "light" ? "☀️" : "🌙";
+      }
+      actualizarIcono();
+      boton.addEventListener("click", function () {
+        var actual = document.documentElement.getAttribute("data-theme");
+        var nuevo = actual === "light" ? "dark" : "light";
+        document.documentElement.setAttribute("data-theme", nuevo);
+        localStorage.setItem("tema", nuevo);
+        actualizarIcono();
+      });
+    })();
+  </script>
 </body>
 </html>

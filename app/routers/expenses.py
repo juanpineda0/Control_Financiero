@@ -54,6 +54,7 @@ def index(request: Request, mes: str | None = None):
         "index.html",
         {
             "user": user,
+            "active_tab": "gastos",
             "categories": CATEGORIES,
             "payment_methods": PAYMENT_METHODS,
             "today": today_bogota().isoformat(),
@@ -116,6 +117,7 @@ def edit_expense_form(request: Request, expense_id: str, mes: str | None = None)
         "edit_expense.html",
         {
             "user": user,
+            "active_tab": "gastos",
             "categories": CATEGORIES,
             "payment_methods": PAYMENT_METHODS,
             "expense": gasto,
