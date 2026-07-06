@@ -50,12 +50,18 @@
 </section>
 
 <section class="card">
-  <div class="month-nav">
-    <a href="/?mes={{ mes_anterior }}" class="month-nav-btn" aria-label="Mes anterior">&lsaquo;</a>
-    <h2>{{ mes_label }}</h2>
-    <a href="/?mes={{ mes_siguiente }}" class="month-nav-btn" aria-label="Mes siguiente">&rsaquo;</a>
-  </div>
+  {% include "_month_nav.html" %}
   <p class="month-total">Total del mes: <strong>{{ total_mes | cop }}</strong></p>
+
+  {% if avisos_presupuesto %}
+  <div class="budget-alert">
+    {% for a in avisos_presupuesto %}
+    <p class="budget-alert-row is-{{ a.semaforo }}">
+      {{ a.category }}: {{ a.pct | round | int }}% del presupuesto
+    </p>
+    {% endfor %}
+  </div>
+  {% endif %}
 
   {% if expenses %}
   <ul class="expenses">

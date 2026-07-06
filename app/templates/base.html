@@ -27,6 +27,7 @@
   <nav class="tabbar">
     <a href="/" class="tab {% if active_tab == 'gastos' %}active{% endif %}">Gastos</a>
     <a href="/ahorros" class="tab {% if active_tab == 'ahorros' %}active{% endif %}">Ahorros</a>
+    <a href="/presupuesto" class="tab {% if active_tab == 'presupuesto' %}active{% endif %}">Presupuesto</a>
   </nav>
   {% endif %}
   <main class="container">
@@ -46,6 +47,65 @@
         document.documentElement.setAttribute("data-theme", nuevo);
         localStorage.setItem("tema", nuevo);
         actualizarIcono();
+      });
+    })();
+  </script>
+  <script>
+    (function () {
+      document.querySelectorAll(".month-nav-label").forEach(function (boton) {
+        var picker = document.getElementById(boton.getAttribute("data-picker-toggle"));
+        if (!picker) return;
+        var basePath = picker.dataset.basePath || "/";
+        var vistaAnos = picker.querySelector("[data-picker-years]");
+        var vistasMeses = picker.querySelectorAll("[data-picker-months]");
+        var titulo = picker.querySelector("[data-picker-title]");
+        var botonAtras = picker.querySelector("[data-picker-back]");
+
+        function ocultarMeses() {
+          vistasMeses.forEach(function (v) {
+            v.hidden = true;
+          });
+        }
+        function mostrarAnos() {
+          vistaAnos.hidden = false;
+          ocultarMeses();
+          botonAtras.hidden = true;
+          titulo.textContent = "Elegir a\u00f1o";
+        }
+        function mostrarMeses(anio) {
+          vistaAnos.hidden = true;
+          ocultarMeses();
+          var vista = picker.querySelector('[data-picker-months][data-year="' + anio + '"]');
+          if (vista) vista.hidden = false;
+          botonAtras.hidden = false;
+          titulo.textContent = anio;
+        }
+        function cerrar() {
+          picker.hidden = true;
+        }
+
+        boton.addEventListener("click", function () {
+          picker.hidden = false;
+          mostrarAnos();
+        });
+        picker.querySelectorAll("[data-picker-close]").forEach(function (el) {
+          el.addEventListener("click", cerrar);
+        });
+        botonAtras.addEventListener("click", mostrarAnos);
+        vistaAnos.querySelectorAll("[data-year]").forEach(function (el) {
+          el.addEventListener("click", function () {
+            mostrarMeses(el.getAttribute("data-year"));
+          });
+        });
+        vistasMeses.forEach(function (vista) {
+          vista.querySelectorAll("[data-month]").forEach(function (el) {
+            el.addEventListener("click", function () {
+              var anio = vista.getAttribute("data-year");
+              var mes = el.getAttribute("data-month").padStart(2, "0");
+              window.location.href = basePath + "?mes=" + anio + "-" + mes;
+            });
+          });
+        });
       });
     })();
   </script>

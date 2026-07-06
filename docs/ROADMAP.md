@@ -14,7 +14,7 @@ la sección "Convenciones" de abajo. Al terminarla: marcar el checkbox, actualiz
 - [x] v1 — login Google + formulario de gastos + lista (hecho)
 - [x] Sesión 1 — Base: navegación, método de pago, editar/borrar, vista mensual
 - [x] Sesión 2 — Ahorros: metas y aportes
-- [ ] Sesión 3 — Presupuestos
+- [x] Sesión 3 — Presupuestos
 - [ ] Sesión 4 — Estadísticas
 - [ ] Sesión 5 — Importar histórico del Excel (flexible: requiere solo la 1 y la 2)
 - [ ] Sesión 6 — Ingresos y settle-up

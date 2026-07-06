@@ -6,8 +6,17 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 
 from .. import auth
 from ..categories import CATEGORIES, PAYMENT_METHODS
-from ..dates import month_bounds, month_label, parse_month_param, shift_month, today_bogota
+from ..dates import (
+    MESES_CORTOS,
+    meses_con_datos,
+    month_bounds,
+    month_label,
+    parse_month_param,
+    shift_month,
+    today_bogota,
+)
 from ..db import get_supabase
+from ..services.budgets import avisos_presupuesto, gastado_por_categoria
 from ..templating import templates
 
 router = APIRouter()
@@ -26,6 +35,14 @@ def _redirect_to_month(mes: str | None) -> RedirectResponse:
     return RedirectResponse(destino, status_code=303)
 
 
+def _meses_por_ano() -> dict[int, list[int]]:
+    fechas = cast(
+        "list[dict[str, Any]]",
+        get_supabase().table("expenses").select("occurred_on").execute().data,
+    )
+    return meses_con_datos([f["occurred_on"] for f in fechas])
+
+
 @router.get("/", response_class=HTMLResponse)
 def index(request: Request, mes: str | None = None):
     user = auth.get_session(request)
@@ -34,6 +51,7 @@ def index(request: Request, mes: str | None = None):
 
     year, month = parse_month_param(mes)
     start, end = month_bounds(year, month)
+    hoy = today_bogota()
 
     gastos = cast(
         "list[dict[str, Any]]",
@@ -49,6 +67,13 @@ def index(request: Request, mes: str | None = None):
     )
     total_mes = sum(int(g["amount"]) for g in gastos)
 
+    limites = cast(
+        "list[dict[str, Any]]",
+        get_supabase().table("budgets").select("category, monthly_limit").execute().data,
+    )
+    limites_map = {b["category"]: int(b["monthly_limit"]) for b in limites}
+    avisos = avisos_presupuesto(gastado_por_categoria(gastos), limites_map)
+
     return templates.TemplateResponse(
         request,
         "index.html",
@@ -57,13 +82,17 @@ def index(request: Request, mes: str | None = None):
             "active_tab": "gastos",
             "categories": CATEGORIES,
             "payment_methods": PAYMENT_METHODS,
-            "today": today_bogota().isoformat(),
+            "today": hoy.isoformat(),
             "expenses": gastos,
             "total_mes": total_mes,
+            "avisos_presupuesto": avisos,
+            "base_path": "/",
             "mes_actual": f"{year:04d}-{month:02d}",
             "mes_label": month_label(year, month),
             "mes_anterior": shift_month(year, month, -1),
             "mes_siguiente": shift_month(year, month, 1),
+            "meses_por_ano": _meses_por_ano(),
+            "meses_cortos": MESES_CORTOS,
         },
     )
 

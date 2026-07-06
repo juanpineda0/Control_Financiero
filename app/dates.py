@@ -14,6 +14,11 @@ MESES = [
     "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
 ]
 
+MESES_CORTOS = [
+    "Ene", "Feb", "Mar", "Abr", "May", "Jun",
+    "Jul", "Ago", "Sep", "Oct", "Nov", "Dic",
+]
+
 
 def today_bogota() -> date:
     return datetime.now(BOGOTA_TZ).date()
@@ -49,6 +54,20 @@ def shift_month(year: int, month: int, delta: int) -> str:
 
 def month_label(year: int, month: int) -> str:
     return f"{MESES[month - 1]} {year}"
+
+
+def meses_con_datos(fechas: list[str]) -> dict[int, list[int]]:
+    """Agrupa fechas 'YYYY-MM-DD' en {ano: [meses]} (solo los que tienen al menos un
+    registro), ambos ordenados del mas reciente al mas viejo. Para el selector de mes.
+    """
+    agrupado: dict[int, set[int]] = {}
+    for f in fechas:
+        year, month = int(f[:4]), int(f[5:7])
+        agrupado.setdefault(year, set()).add(month)
+    return {
+        year: sorted(meses, reverse=True)
+        for year, meses in sorted(agrupado.items(), reverse=True)
+    }
 
 
 def add_months(d: date, n: int) -> date:

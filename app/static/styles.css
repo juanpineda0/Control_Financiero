@@ -194,7 +194,21 @@ input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
 .tab.active { color: var(--text); border-bottom-color: var(--accent); }
 
 .month-nav { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 4px; }
-.month-nav h2 { margin: 0; min-width: 160px; text-align: center; }
+.month-nav-label {
+  margin: 0;
+  min-width: 160px;
+  padding: 4px 10px;
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.month-nav-label:hover { background: var(--border); }
 .month-nav-btn {
   color: var(--text);
   text-decoration: none;
@@ -266,3 +280,93 @@ input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
 
 .expense-amount.is-aporte { color: var(--ok); }
 .expense-amount.is-retiro { color: var(--error); }
+
+.budget-alert { display: flex; flex-direction: column; gap: 4px; margin: 0 0 14px; }
+.budget-alert-row {
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  background: var(--border);
+}
+.budget-alert-row.is-amarillo { background: rgba(234, 179, 8, 0.16); color: #b45309; }
+.budget-alert-row.is-rojo { background: var(--error-bg); color: var(--error); }
+:root[data-theme="dark"] .budget-alert-row.is-amarillo { color: #facc15; }
+
+.budget-totals { display: flex; flex-direction: column; gap: 4px; }
+.budget-totals p { margin: 0; display: flex; justify-content: space-between; }
+
+.budgets { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
+.budget-row { border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+.budget-row:last-child { border-bottom: none; padding-bottom: 0; }
+.budget-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.budget-cat { font-weight: 600; }
+.budget-amounts { margin: 8px 0 0; font-size: 0.9rem; }
+.budget-form { display: flex; gap: 8px; margin-top: 10px; }
+.budget-form input {
+  flex: 1;
+  padding: 8px 10px;
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.budget-pct { font-size: 0.78rem; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+.budget-pct.is-verde { background: var(--ok-bg); color: var(--ok); }
+.budget-pct.is-amarillo { background: rgba(234, 179, 8, 0.16); color: #b45309; }
+.budget-pct.is-rojo { background: var(--error-bg); color: var(--error); }
+:root[data-theme="dark"] .budget-pct.is-amarillo { color: #facc15; }
+
+.goal-progress-fill.is-verde { background: var(--ok); }
+.goal-progress-fill.is-amarillo { background: #eab308; }
+.goal-progress-fill.is-rojo { background: var(--error); }
+
+.is-over { color: var(--error); }
+
+.month-picker[hidden] { display: none; }
+.month-picker {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.month-picker-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.5); }
+.month-picker-panel {
+  position: relative;
+  width: min(320px, calc(100vw - 32px));
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+.month-picker-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.month-picker-title { font-weight: 600; }
+.month-picker-back, .month-picker-close {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 4px;
+}
+.month-picker-back:hover, .month-picker-close:hover { color: var(--text); }
+.month-picker-close { font-size: 1.2rem; line-height: 1; }
+
+.month-picker-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.month-picker-grid[hidden] { display: none; }
+.month-picker-cell {
+  padding: 10px 6px;
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.month-picker-cell:hover { background: var(--border); }

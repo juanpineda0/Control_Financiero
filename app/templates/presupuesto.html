@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Presupuesto — Finanzas{% endblock %}
+{% block content %}
+
+<section class="card">
+  {% include "_month_nav.html" %}
+
+  <div class="budget-totals">
+    <p>Presupuestado <strong>{{ total_presupuestado | cop }}</strong></p>
+    <p>Gastado <strong>{{ total_gastado | cop }}</strong></p>
+    <p>Disponible <strong class="{% if disponible_total < 0 %}is-over{% endif %}">{{ disponible_total | cop }}</strong></p>
+    {% if ritmo is not none %}
+    <p class="muted">Ritmo: {{ ritmo | round | int | cop }}/dia para el resto del mes</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="card">
+  <h2>Categorias</h2>
+  <ul class="budgets">
+    {% for f in filas %}
+    <li class="budget-row">
+      <div class="budget-header">
+        <span class="budget-cat">{{ f.category }}</span>
+        {% if f.pct is not none %}
+        <span class="budget-pct is-{{ f.semaforo }}">{{ f.pct | round | int }}%</span>
+        {% endif %}
+      </div>
+
+      {% if f.limite > 0 %}
+      <div class="goal-progress">
+        <div class="goal-progress-fill is-{{ f.semaforo }}" style="width: {{ [f.pct, 100] | min }}%"></div>
+      </div>
+      <p class="budget-amounts">{{ f.gastado | cop }} <span class="muted">/ {{ f.limite | cop }}</span>
+        &middot; Disponible <strong class="{% if f.disponible < 0 %}is-over{% endif %}">{{ f.disponible | cop }}</strong></p>
+      {% else %}
+      <p class="budget-amounts muted">{{ f.gastado | cop }} &middot; sin limite</p>
+      {% endif %}
+
+      <form class="budget-form" method="post" action="/presupuesto/{{ f.category }}/editar">
+        <input type="hidden" name="mes" value="{{ mes_actual }}">
+        <input type="number" name="monthly_limit" min="0" step="1" inputmode="numeric"
+               placeholder="Limite mensual" value="{{ f.limite if f.limite > 0 else '' }}"
+               onwheel="this.blur()" required>
+        <button type="submit" class="chip-btn">Guardar</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+
+{% endblock %}

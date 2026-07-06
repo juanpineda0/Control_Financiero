@@ -1,0 +1,36 @@
+{# Requiere en el contexto: base_path, mes_anterior, mes_siguiente, mes_label,
+   meses_por_ano ({ano: [meses]}, solo los que tienen gastos), meses_cortos.
+   Incluir dentro de un <section class="card"> o similar. #}
+<div class="month-nav">
+  <a href="{{ base_path }}?mes={{ mes_anterior }}" class="month-nav-btn" aria-label="Mes anterior">&lsaquo;</a>
+  <button type="button" class="month-nav-label" data-picker-toggle="mes-picker">{{ mes_label }}</button>
+  <a href="{{ base_path }}?mes={{ mes_siguiente }}" class="month-nav-btn" aria-label="Mes siguiente">&rsaquo;</a>
+</div>
+
+<div class="month-picker" id="mes-picker" data-base-path="{{ base_path }}" hidden>
+  <div class="month-picker-backdrop" data-picker-close></div>
+  <div class="month-picker-panel">
+    <div class="month-picker-header">
+      <button type="button" class="month-picker-back" data-picker-back hidden>&lsaquo; A&ntilde;os</button>
+      <span class="month-picker-title" data-picker-title>Elegir a&ntilde;o</span>
+      <button type="button" class="month-picker-close" data-picker-close aria-label="Cerrar">&times;</button>
+    </div>
+
+    {% if meses_por_ano %}
+    <div class="month-picker-grid" data-picker-years>
+      {% for y in meses_por_ano.keys() %}
+      <button type="button" class="month-picker-cell" data-year="{{ y }}">{{ y }}</button>
+      {% endfor %}
+    </div>
+    {% for y, meses in meses_por_ano.items() %}
+    <div class="month-picker-grid" data-picker-months data-year="{{ y }}" hidden>
+      {% for m in meses %}
+      <button type="button" class="month-picker-cell" data-month="{{ m }}">{{ meses_cortos[m - 1] }}</button>
+      {% endfor %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <p class="muted" data-picker-years>Aun no hay gastos registrados.</p>
+    {% endif %}
+  </div>
+</div>
