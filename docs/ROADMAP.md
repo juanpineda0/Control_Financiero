@@ -16,7 +16,7 @@ la sección "Convenciones" de abajo. Al terminarla: marcar el checkbox, actualiz
 - [x] Sesión 2 — Ahorros: metas y aportes
 - [x] Sesión 3 — Presupuestos
 - [ ] Sesión 4 — Estadísticas
-- [ ] Sesión 5 — Importar histórico del Excel (flexible: requiere solo la 1 y la 2)
+- [x] Sesión 5 — Importar histórico del Excel (flexible: requiere solo la 1 y la 2)
 - [ ] Sesión 6 — Ingresos y settle-up
 - [ ] Sesión 7 — Día a día: ¿me ahorro por llevar comida al trabajo?
 
@@ -116,29 +116,35 @@ La fundación que las demás fases necesitan.
 - Verificación: comparar totales contra sumas hechas a mano (o contra el Excel si el
   histórico ya se importó).
 
-## Sesión 5 — Importar el histórico del Excel
+## Sesión 5 — Importar el histórico del Excel (hecha)
 
-Puede adelantarse; solo requiere las sesiones 1 y 2. Ideal hacerla antes de usar mucho
-Stats, para arrancar con ~7 meses de historia.
+`scripts/import_excel.py` — script **local** (no corre en Vercel), usa `openpyxl`
+(en `requirements-dev.txt`, NO en el `requirements.txt` de producción). El Excel es un
+archivo local gitignoreado (`*.xlsx`); **`scripts/` tambien esta gitignoreado completo**
+porque el script mapea nombres reales (`QUIEN_MAP`) y el repo es publico. Si hace falta
+recrearlo, la logica completa (columnas, mapa de categorias, dedup) queda documentada aqui
+abajo.
 
-- `scripts/import_excel.py` — script **local** (no corre en Vercel), usa `openpyxl`
-  (instalarlo suelto o en `requirements-dev.txt`; NO en el `requirements.txt` de
-  producción). El Excel es un archivo local gitignoreado (`*.xlsx`).
-- Hojas mensuales: header en la fila 5, columnas A–E = Fecha, Monto, Origen→`description`,
-  Categoría→mapa, "¿Quién lo pagó?"→`user_name`. Ignorar columnas auxiliares y el
-  "Resumen por día". Defaults: `is_shared=true`, `payment_method='Efectivo'`.
-- Mapa de categorías Excel→app como dict editable al inicio del script:
-  Mercado (comida)→Mercado; Mercado (Aseo)→Hogar; Transporte trabajo→Transporte;
-  Recreación→Entretenimiento; Luz/Internet/Gas→Servicios; Imprevistos→Otros;
-  Cuota casa→**confirmar antes de correr** (¿Arriendo? ¿categoría nueva?).
-- Hoja "Ahorros" (aportes por columnas: monto, quién, fecha) → `savings_contributions`
-  de las metas correspondientes (crearlas antes desde la UI).
-- SQL: `alter table public.expenses add column source text null;` — el import marca
-  `source='excel'` para poder re-importar borrando `where source='excel'` (idempotente).
+Decisión final (distinta del plan original): **sin columna `source`** — Juan prefirió que
+los gastos importados queden indistinguibles de uno hecho a mano, sin marca de origen. La
+idempotencia para poder correr el script mas de una vez sin duplicar se resuelve comparando
+contra lo que ya hay en la BD (fecha+monto+categoría+quién para gastos; +goal_id para
+aportes) y omitiendo lo que ya exista, en vez de borrar por `source='excel'`.
+
+- Hojas mensuales (Sep 2025 a jun2026): header en la fila 5, columnas A–E = Fecha, Monto,
+  Origen→`description`, Categoría→mapa, "¿Quién lo pagó?"→`user_name`. Mapa de categorías
+  confirmado: Mercado (comida)→Mercado; Mercado (Aseo)→Hogar; Transporte trabajo→Transporte;
+  Recreación→Entretenimiento; Luz→Servicios; Internet→Servicios; Imprevistos→Otros;
+  Cuota casa→**Cuota Casa** (la app ya tenia esa categoria exacta desde la Sesion 1).
+- Hoja "Ahorros": el script sabe leerla (`--sin-ahorros` para omitirla), pero en la
+  practica Juan ya habia cargado esos aportes a mano, asi que el import real se corrio con
+  `--sin-ahorros`.
 - Modo `--dry-run` que imprime el resumen (filas por hoja, total por categoría) sin
   insertar nada.
-- Verificación: dry-run → importar → comparar el total por mes contra la celda "Total"
-  de cada hoja del Excel.
+- Verificación hecha: dry-run → importar (277 gastos) → comparar el total por mes contra
+  la app real (`/?mes=YYYY-MM`) vs la celda "Total" de cada hoja del Excel. Cuadraron los
+  7 meses (el de jun2026 con una diferencia esperada: el Excel llega solo hasta el 29, el
+  30 de junio ya se habia registrado a mano en la app real).
 
 ## Sesión 6 — Ingresos y settle-up
 

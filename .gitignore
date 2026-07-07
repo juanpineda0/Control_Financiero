@@ -8,6 +8,7 @@ schema.sql
 
 # Data personal (el repo sera publico)
 *.xlsx
+scripts/
 
 # Python
 __pycache__/
