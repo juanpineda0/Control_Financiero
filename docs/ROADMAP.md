@@ -15,7 +15,7 @@ la sección "Convenciones" de abajo. Al terminarla: marcar el checkbox, actualiz
 - [x] Sesión 1 — Base: navegación, método de pago, editar/borrar, vista mensual
 - [x] Sesión 2 — Ahorros: metas y aportes
 - [x] Sesión 3 — Presupuestos
-- [ ] Sesión 4 — Estadísticas
+- [x] Sesión 4 — Estadísticas
 - [x] Sesión 5 — Importar histórico del Excel (flexible: requiere solo la 1 y la 2)
 - [ ] Sesión 6 — Ingresos y settle-up
 - [ ] Sesión 7 — Día a día: ¿me ahorro por llevar comida al trabajo?
@@ -104,17 +104,27 @@ La fundación que las demás fases necesitan.
 - Verificación: definir 2–3 límites, registrar gastos que crucen los umbrales, ver el
   semáforo cambiar.
 
-## Sesión 4 — Estadísticas
+## Sesión 4 — Estadísticas (hecha)
 
-- `/stats?mes=`: total del mes, donut por categoría (Chart.js CDN), barras de gasto por
-  día, comparativa vs mes anterior (Δ por categoría), gasto por persona, compartido vs
-  no compartido, **por método de pago** (cuánto se fue a la tarjeta de crédito), **por
-  quincena** (1–15 / 16–fin), promedio diario, proyección de cierre de mes al ritmo
-  actual, top 10 gastos.
-- Vista año: barras por mes y promedio mensual por categoría.
-- `app/services/stats.py`: funciones puras (lista de gastos → agregados).
-- Verificación: comparar totales contra sumas hechas a mano (o contra el Excel si el
-  histórico ya se importó).
+`/stats?mes=`: hero con el total del mes + Δ vs mes anterior, KPIs (promedio diario,
+proyección de cierre al ritmo actual), gasto por día (Chart.js), gasto por categoría,
+comparativa vs mes anterior por categoría (Chart.js, barra divergente rojo/verde),
+gasto por persona, compartido vs no compartido, **por método de pago** (cuánto fue a
+tarjeta de crédito), **por quincena** (1–15 / 16–fin), top 10 gastos (tabla).
+
+**Decisión de diseño (distinta del plan original): sin donut.** Se sigue la guia de la
+skill `dataviz` del repo: un donut/pie no es buena forma para >6 categorías ni para
+comparar valores parecidos. "Gasto por categoría" quedó como una lista de barras
+horizontales ordenadas (magnitud, un solo hue secuencial), igual de "bello" pero mas
+legible con las 13 categorías de la app. La paleta categórica (`--series-1..8` en
+`styles.css`, luz/oscuro) es la paleta de referencia validada CVD de esa skill.
+
+Vista año (`/stats/anio?anio=`): barras por mes (Chart.js) + tabla de promedio mensual
+por categoría. Selector de años con datos reales (reusa el patron de `meses_con_datos`).
+
+`app/services/stats.py`: funciones puras (lista de gastos → agregados). Verificación
+hecha: totales de varios meses comparados contra la app real, coinciden con lo
+importado del Excel en la Sesión 5.
 
 ## Sesión 5 — Importar el histórico del Excel (hecha)
 

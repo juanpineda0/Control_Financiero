@@ -14,6 +14,17 @@
   --ok: #22c55e;
   --ok-bg: rgba(34, 197, 94, 0.16);
   --radius: 14px;
+
+  /* paleta categorica para graficas (validada CVD, ver dataviz skill) */
+  --series-1: #3987e5; /* azul */
+  --series-2: #199e70; /* aqua */
+  --series-3: #c98500; /* amarillo */
+  --series-4: #16a34a; /* verde */
+  --series-5: #9085e9; /* violeta */
+  --series-6: #e66767; /* rojo */
+  --series-7: #d55181; /* magenta */
+  --series-8: #d95926; /* naranja */
+  --chart-grid: #2c2c2a;
 }
 
 :root[data-theme="light"] {
@@ -31,6 +42,16 @@
   --ok: #16a34a;
   --ok-bg: rgba(22, 163, 74, 0.14);
   --radius: 14px;
+
+  --series-1: #2a78d6;
+  --series-2: #1baf7a;
+  --series-3: #c98500;
+  --series-4: #008300;
+  --series-5: #4a3aa7;
+  --series-6: #e34948;
+  --series-7: #e87ba4;
+  --series-8: #c9633a;
+  --chart-grid: #e9d9ec;
 }
 
 * { box-sizing: border-box; }
@@ -370,3 +391,76 @@ input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
   font-family: inherit;
 }
 .month-picker-cell:hover { background: var(--border); }
+
+/* ---------- Stats ---------- */
+
+.hero-stat { text-align: center; padding: 6px 0 2px; }
+.hero-label { color: var(--muted); font-size: 0.85rem; margin: 0 0 4px; }
+.hero-value { font-size: 2.4rem; font-weight: 700; margin: 0; line-height: 1.1; }
+.hero-delta { font-size: 0.85rem; margin: 8px 0 0; }
+.hero-delta.is-up { color: var(--error); }
+.hero-delta.is-down { color: var(--ok); }
+.hero-delta.is-flat { color: var(--muted); }
+
+.stats-kpis {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.stat-tile {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+.stat-label { color: var(--muted); font-size: 0.76rem; margin: 0 0 6px; }
+.stat-value { font-size: 1.25rem; font-weight: 700; margin: 0; }
+.stat-note { color: var(--muted); font-size: 0.74rem; margin: 4px 0 0; }
+
+.chart-card h2 { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.chart-card h2 small { color: var(--muted); font-size: 0.72rem; font-weight: 400; }
+.chart-wrap { position: relative; height: 220px; margin-top: 8px; }
+.chart-wrap.is-tall { height: 260px; }
+
+.bar-list { display: flex; flex-direction: column; gap: 12px; }
+.bar-row-top { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.86rem; gap: 8px; }
+.bar-row-top .bar-name { color: var(--text); }
+.bar-row-top .bar-value { color: var(--muted); white-space: nowrap; }
+.bar-track { height: 8px; background: var(--border); border-radius: 999px; overflow: hidden; margin-top: 5px; }
+.bar-fill { height: 100%; border-radius: 999px; background: var(--series-1); }
+
+.split-bar { display: flex; height: 14px; border-radius: 999px; overflow: hidden; gap: 2px; background: var(--border); }
+.split-bar-seg { height: 100%; }
+.split-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px; font-size: 0.82rem; }
+.split-legend-item { display: flex; align-items: center; gap: 6px; color: var(--text); }
+.split-legend-dot { width: 10px; height: 10px; border-radius: 999px; flex: none; }
+.split-legend-item .muted { font-size: 0.78rem; }
+
+.top-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+.top-table th {
+  text-align: left;
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.74rem;
+  padding: 0 8px 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.top-table td { padding: 8px 8px 8px 0; border-bottom: 1px solid var(--border); vertical-align: top; }
+.top-table tr:last-child td { border-bottom: none; }
+.top-table .col-monto { text-align: right; font-weight: 600; white-space: nowrap; }
+.top-table .col-rank { color: var(--muted); width: 1.6em; }
+
+.stats-nav-anio { text-align: center; margin-top: -4px; }
+.stats-nav-anio a { color: var(--muted); text-decoration: none; font-size: 0.84rem; }
+.stats-nav-anio a:hover { color: var(--text); }
+
+.anio-select { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+.anio-select a {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--border);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.82rem;
+}
+.anio-select a.active { background: var(--accent); color: var(--accent-text); font-weight: 600; }

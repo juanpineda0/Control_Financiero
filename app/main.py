@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from .db import get_supabase
-from .routers import auth, budgets, expenses, savings
+from .routers import auth, budgets, expenses, savings, stats
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -17,6 +17,7 @@ app.include_router(auth.router)
 app.include_router(expenses.router)
 app.include_router(savings.router)
 app.include_router(budgets.router)
+app.include_router(stats.router)
 
 
 @app.get("/health")

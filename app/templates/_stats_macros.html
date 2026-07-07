@@ -1,0 +1,19 @@
+{% macro split_bar(pares, colores) %}
+{% set total = pares | sum(attribute=1) %}
+<div class="split-bar">
+  {% for nombre, monto in pares %}
+  {% if total > 0 and monto > 0 %}
+  <div class="split-bar-seg" style="width: {{ monto / total * 100 }}%; background: {{ colores[loop.index0] }};"></div>
+  {% endif %}
+  {% endfor %}
+</div>
+<div class="split-legend">
+  {% for nombre, monto in pares %}
+  <span class="split-legend-item">
+    <span class="split-legend-dot" style="background: {{ colores[loop.index0] }};"></span>
+    {{ nombre }}
+    <span class="muted">({{ monto | cop }}{% if total > 0 %} &middot; {{ (monto / total * 100) | round | int }}%{% endif %})</span>
+  </span>
+  {% endfor %}
+</div>
+{% endmacro %}

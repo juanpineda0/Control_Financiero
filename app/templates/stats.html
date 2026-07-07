@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% import "_stats_macros.html" as m %}
+{% block title %}Stats — Finanzas{% endblock %}
+{% block content %}
+
+<section class="card">
+  {% include "_month_nav.html" %}
+  <p class="stats-nav-anio"><a href="/stats/anio?anio={{ anio_actual }}">Ver vista anual &rsaquo;</a></p>
+</section>
+
+<section class="card hero-stat">
+  <p class="hero-label">Total de {{ mes_label }}</p>
+  <p class="hero-value">{{ total | cop }}</p>
+  {% if total_anterior > 0 %}
+  <p class="hero-delta {% if delta_total > 0 %}is-up{% elif delta_total < 0 %}is-down{% else %}is-flat{% endif %}">
+    {% if delta_total > 0 %}&uarr; {{ delta_total | cop }} mas que el mes anterior
+    {% elif delta_total < 0 %}&darr; {{ (-delta_total) | cop }} menos que el mes anterior
+    {% else %}igual que el mes anterior{% endif %}
+  </p>
+  {% endif %}
+</section>
+
+<section class="stats-kpis">
+  <div class="stat-tile">
+    <p class="stat-label">Promedio diario</p>
+    <p class="stat-value">{{ promedio | round | int | cop }}</p>
+  </div>
+  <div class="stat-tile">
+    <p class="stat-label">Proyeccion a fin de mes</p>
+    {% if proyeccion is not none %}
+    <p class="stat-value">{{ proyeccion | cop }}</p>
+    <p class="stat-note">al ritmo de estos {{ dias_transcurridos }} dias</p>
+    {% else %}
+    <p class="stat-value">{{ total | cop }}</p>
+    <p class="stat-note">mes cerrado</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="card chart-card">
+  <h2>Gasto por dia</h2>
+  <div class="chart-wrap">
+    <canvas id="chart-dia"></canvas>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Gasto por categoria</h2>
+  {% if por_categoria %}
+  <div class="bar-list">
+    {% for cat, monto in por_categoria %}
+    <div class="bar-row">
+      <div class="bar-row-top">
+        <span class="bar-name">{{ cat }}</span>
+        <span class="bar-value">{{ monto | cop }}</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width: {{ monto / por_categoria[0][1] * 100 }}%"></div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="muted">Sin gastos este mes.</p>
+  {% endif %}
+</section>
+
+<section class="card chart-card">
+  <h2>Comparativa vs mes anterior <small>por categoria</small></h2>
+  {% if delta_categoria %}
+  <div class="chart-wrap is-tall">
+    <canvas id="chart-delta"></canvas>
+  </div>
+  {% if sube_top %}
+  <p class="stat-note">Subio mas: {{ sube_top.category }} (+{{ sube_top.delta | cop }})</p>
+  {% endif %}
+  {% if baja_top %}
+  <p class="stat-note">Bajo mas: {{ baja_top.category }} ({{ baja_top.delta | cop }})</p>
+  {% endif %}
+  {% else %}
+  <p class="muted">Sin datos del mes anterior para comparar.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Por persona</h2>
+  {{ m.split_bar(por_persona, ["var(--series-1)", "var(--series-2)"]) }}
+</section>
+
+<section class="card">
+  <h2>Compartido vs no compartido</h2>
+  {{ m.split_bar(compartido, ["var(--series-1)", "var(--series-3)"]) }}
+</section>
+
+<section class="card">
+  <h2>Por metodo de pago</h2>
+  {{ m.split_bar(por_metodo, ["var(--series-1)", "var(--series-2)", "var(--series-5)"]) }}
+</section>
+
+<section class="card">
+  <h2>Por quincena</h2>
+  {{ m.split_bar(por_quincena, ["var(--series-1)", "var(--series-2)"]) }}
+</section>
+
+<section class="card">
+  <h2>Top 10 gastos</h2>
+  {% if top10 %}
+  <div style="overflow-x: auto;">
+    <table class="top-table">
+      <thead>
+        <tr>
+          <th class="col-rank">#</th>
+          <th>Fecha</th>
+          <th>Categoria</th>
+          <th>Quien</th>
+          <th class="col-monto">Monto</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for g in top10 %}
+        <tr>
+          <td class="col-rank">{{ loop.index }}</td>
+          <td>{{ g.occurred_on }}{% if g.description %}<br><span class="muted">{{ g.description }}</span>{% endif %}</td>
+          <td>{{ g.category }}</td>
+          <td>{{ g.user_name }}</td>
+          <td class="col-monto">{{ g.amount | cop }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="muted">Sin gastos este mes.</p>
+  {% endif %}
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>
+  (function () {
+    var estilos = getComputedStyle(document.documentElement);
+    var color = function (nombre) { return estilos.getPropertyValue(nombre).trim(); };
+    var grid = color("--chart-grid");
+    var muted = color("--muted");
+
+    function formatoCOP(valor) {
+      return "$" + Math.round(valor).toLocaleString("es-CO");
+    }
+
+    Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+    Chart.defaults.color = muted;
+
+    var elDia = document.getElementById("chart-dia");
+    if (elDia) {
+      new Chart(elDia, {
+        type: "bar",
+        data: {
+          labels: {{ dia_labels | tojson }},
+          datasets: [{
+            data: {{ dia_data | tojson }},
+            backgroundColor: color("--series-1"),
+            borderRadius: 4,
+            maxBarThickness: 14,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: function (ctx) { return formatoCOP(ctx.parsed.y); } } },
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: { autoSkip: true, maxRotation: 0 } },
+            y: {
+              grid: { color: grid, drawTicks: false },
+              border: { display: false },
+              ticks: { callback: function (v) { return formatoCOP(v); } },
+            },
+          },
+        },
+      });
+    }
+
+    var elDelta = document.getElementById("chart-delta");
+    if (elDelta) {
+      var deltaData = {{ delta_data | tojson }};
+      new Chart(elDelta, {
+        type: "bar",
+        data: {
+          labels: {{ delta_labels | tojson }},
+          datasets: [{
+            data: deltaData,
+            backgroundColor: deltaData.map(function (v) { return v > 0 ? color("--error") : color("--ok"); }),
+            borderRadius: 4,
+            maxBarThickness: 18,
+          }],
+        },
+        options: {
+          indexAxis: "y",
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: function (ctx) { return formatoCOP(ctx.parsed.x); } } },
+          },
+          scales: {
+            x: {
+              grid: { color: grid, drawTicks: false },
+              border: { display: false },
+              ticks: { callback: function (v) { return formatoCOP(v); } },
+            },
+            y: { grid: { display: false } },
+          },
+        },
+      });
+    }
+  })();
+</script>
+
+{% endblock %}
