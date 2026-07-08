@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Editar ingreso — Finanzas{% endblock %}
+{% block content %}
+
+<section class="card">
+  <h1>Editar ingreso</h1>
+  <form class="form" method="post" action="/ingresos/{{ ingreso.id }}/editar">
+    <input type="hidden" name="mes" value="{{ mes }}">
+    <label>
+      Fecha
+      <input type="date" name="occurred_on" value="{{ ingreso.occurred_on }}" required>
+    </label>
+
+    <label>
+      Monto (COP)
+      <input type="number" name="amount" min="1" step="1" inputmode="numeric"
+             value="{{ ingreso.amount }}" onwheel="this.blur()" required>
+    </label>
+
+    <label>
+      Tipo
+      <select name="kind">
+        {% for k in income_kinds %}
+        <option value="{{ k }}" {% if k == ingreso.kind %}selected{% endif %}>{{ k }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>
+      De quien
+      <select name="user_name">
+        {% for p in personas %}
+        <option value="{{ p }}" {% if p == ingreso.user_name %}selected{% endif %}>{{ p }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>
+      Descripcion
+      <input type="text" name="description" maxlength="200" value="{{ ingreso.description or '' }}">
+    </label>
+
+    <button class="btn" type="submit">Guardar cambios</button>
+  </form>
+
+  <form method="post" action="/ingresos/{{ ingreso.id }}/eliminar"
+        onsubmit="return confirm('Borrar este ingreso?');">
+    <input type="hidden" name="mes" value="{{ mes }}">
+    <button type="submit" class="btn btn-danger">Borrar ingreso</button>
+  </form>
+
+  <a href="/ingresos?mes={{ mes }}" class="back-link">&larr; Volver</a>
+</section>
+
+{% endblock %}

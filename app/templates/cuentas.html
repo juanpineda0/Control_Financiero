@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Cuentas — Finanzas{% endblock %}
+{% block content %}
+
+<section class="card">
+  {% include "_month_nav.html" %}
+
+  {% if sin_proporcion %}
+  <p class="muted">Aun no hay ingresos registrados (ni en meses anteriores). Registra los
+    ingresos del mes en la pestana <a href="/ingresos?mes={{ mes_actual }}">Ingresos</a>
+    para calcular la proporcion del reparto.</p>
+  {% elif saldado %}
+  <p class="verdict">Mes saldado{% if saldado.amount > 0 %}:
+    {{ saldado.from_user }} le pago <strong>{{ saldado.amount | cop }}</strong> a {{ saldado.to_user }}
+    {% else %} &mdash; quedaron a paz y salvo{% endif %}
+  </p>
+  <div class="verdict-actions">
+    <form method="post" action="/cuentas/deshacer"
+          onsubmit="return confirm('Deshacer el saldado de este mes?');">
+      <input type="hidden" name="mes" value="{{ mes_actual }}">
+      <button type="submit" class="chip-btn">Deshacer saldado</button>
+    </form>
+  </div>
+  {% else %}
+  {% if deuda %}
+  <p class="verdict">{{ deuda[0] }} le debe <strong>{{ deuda[2] | cop }}</strong> a {{ deuda[1] }}</p>
+  {% else %}
+  <p class="verdict">Estan a paz y salvo este mes</p>
+  {% endif %}
+  <div class="verdict-actions">
+    <form method="post" action="/cuentas/saldar"
+          onsubmit="return confirm('Confirmar este mes como saldado?');">
+      <input type="hidden" name="mes" value="{{ mes_actual }}">
+      <button type="submit" class="btn">Marcar saldado</button>
+    </form>
+  </div>
+  {% endif %}
+
+  {% if not saldado and personas | length >= 2 %}
+  <form class="form quick-form" method="post" action="/cuentas/transferencias" id="transfer-form">
+    <input type="hidden" name="mes" value="{{ mes_actual }}">
+    <input type="hidden" name="from_user" id="transfer-de" value="{{ otro }}">
+    <input type="hidden" name="to_user" id="transfer-para" value="{{ user.name }}">
+    <input type="number" name="amount" min="1" step="1" inputmode="numeric"
+           placeholder="Monto" onwheel="this.blur()" required>
+    <input type="date" name="occurred_on" value="{{ today }}" required>
+    <button type="button" class="chip-btn" id="transfer-swap" title="Invertir direccion"></button>
+    <button type="submit" class="btn">Registrar</button>
+  </form>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Como se calculo</h2>
+
+  <div class="budget-totals">
+    <p>Gastos compartidos <strong>{{ total_compartido | cop }}</strong></p>
+    <p>Ingresos del mes <strong>{{ total_ingresos | cop }}</strong></p>
+    {% if pct_ahorro is not none %}
+    <p>Ahorro del mes <strong class="{% if pct_ahorro < 0 %}is-over{% endif %}">{{ pct_ahorro | round(1) }}%</strong></p>
+    {% endif %}
+  </div>
+
+  {% if not sin_proporcion %}
+  <hr class="section-divider">
+  {% if mes_proporcion %}
+  <p class="muted">Este mes no tiene ingresos registrados: la proporcion se tomo de los
+    ingresos de {{ mes_proporcion }}.</p>
+  <hr class="section-divider">
+  {% endif %}
+
+  <ul class="budgets">
+    {% for f in filas %}
+    <li class="budget-row">
+      <div class="budget-header">
+        <span class="budget-cat">{{ f.persona }}</span>
+        {% if f.proporcion is not none %}
+        <span class="budget-pct">{{ (f.proporcion * 100) | round | int }}%</span>
+        {% endif %}
+      </div>
+      <p class="settle-detail">
+        Ingreso{% if mes_proporcion %} ({{ mes_proporcion }}){% endif %} {{ f.ingreso | cop }}
+        &middot; Cuota justa {{ f.cuota | cop }}
+      </p>
+      <p class="settle-detail">
+        Pago en gastos {{ f.pagado | cop }}
+        &middot; Transferencias netas {{ f.transferido | cop }}
+      </p>
+      <p class="settle-saldo {% if f.saldo < 0 %}is-over{% elif f.saldo > 0 %}is-favor{% endif %}">
+        Saldo <strong>{{ f.saldo | cop }}</strong>
+        {% if f.saldo < 0 %}<span class="muted">(debe)</span>
+        {% elif f.saldo > 0 %}<span class="muted">(le deben)</span>{% endif %}
+      </p>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  <a class="back-link" href="/ingresos?mes={{ mes_actual }}">Ver / editar los ingresos del mes &rarr;</a>
+</section>
+
+<section class="card">
+  <h2>Transferencias del mes</h2>
+  {% if transferencias %}
+  <ul class="expenses">
+    {% for t in transferencias %}
+    <li class="expense">
+      <div class="expense-main">
+        <span class="expense-amount">{{ t.amount | cop }}</span>
+        <span class="expense-cat">{{ t.from_user }} &rarr; {{ t.to_user }}</span>
+      </div>
+      <div class="expense-meta">
+        <span>{{ t.occurred_on }}</span>
+        {% if t.note %}<span>&middot; {{ t.note }}</span>{% endif %}
+      </div>
+      <div class="expense-actions">
+        <form method="post" action="/cuentas/transferencias/{{ t.id }}/eliminar"
+              onsubmit="return confirm('Borrar esta transferencia?');">
+          <input type="hidden" name="mes" value="{{ mes_actual }}">
+          <button type="submit" class="link-btn">Borrar</button>
+        </form>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">Sin transferencias registradas este mes.</p>
+  {% endif %}
+</section>
+
+<script>
+  (function () {
+    var de = document.getElementById("transfer-de");
+    var para = document.getElementById("transfer-para");
+    var boton = document.getElementById("transfer-swap");
+    if (!de || !para || !boton) return;
+    function nombre(completo) { return completo.split(" ")[0]; }
+    function actualizar() {
+      boton.textContent = nombre(de.value) + " → " + nombre(para.value) + "  ⇄";
+    }
+    boton.addEventListener("click", function () {
+      var tmp = de.value;
+      de.value = para.value;
+      para.value = tmp;
+      actualizar();
+    });
+    actualizar();
+  })();
+</script>
+
+{% endblock %}

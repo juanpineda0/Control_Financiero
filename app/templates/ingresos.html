@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Ingresos — Finanzas{% endblock %}
+{% block content %}
+
+<section class="card">
+  <h1>Nuevo ingreso</h1>
+  <form class="form" method="post" action="/ingresos">
+    <input type="hidden" name="mes" value="{{ mes_actual }}">
+    <label>
+      Fecha
+      <input type="date" name="occurred_on" value="{{ today }}" required>
+    </label>
+
+    <label>
+      Monto (COP)
+      <input type="number" name="amount" min="1" step="1" inputmode="numeric"
+             placeholder="0" onwheel="this.blur()" required>
+    </label>
+
+    <label>
+      Tipo
+      <select name="kind">
+        {% for k in income_kinds %}
+        <option value="{{ k }}">{{ k }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>
+      De quien
+      <select name="user_name">
+        {% for p in personas %}
+        <option value="{{ p }}" {% if p == user.name %}selected{% endif %}>{{ p }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>
+      Descripcion
+      <input type="text" name="description" maxlength="200" placeholder="Opcional">
+    </label>
+
+    <button class="btn" type="submit">Guardar ingreso</button>
+  </form>
+</section>
+
+<section class="card">
+  {% include "_month_nav.html" %}
+  <p class="month-total">Total del mes: <strong>{{ total_mes | cop }}</strong></p>
+  {% if totales_por_persona %}
+  <div class="budget-totals">
+    {% for persona, total in totales_por_persona.items() %}
+    <p>{{ persona }} <strong>{{ total | cop }}</strong></p>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if ingresos %}
+  <ul class="expenses">
+    {% for i in ingresos %}
+    <li class="expense">
+      <div class="expense-main">
+        <span class="expense-amount">{{ i.amount | cop }}</span>
+        <span class="expense-cat">{{ i.user_name }}</span>
+      </div>
+      <div class="expense-meta">
+        <span>{{ i.occurred_on }}</span>
+        {% if i.description %}<span>&middot; {{ i.description }}</span>{% endif %}
+        <span class="tag">{{ i.kind }}</span>
+      </div>
+      <div class="expense-actions">
+        <a href="/ingresos/{{ i.id }}/editar?mes={{ mes_actual }}">Editar</a>
+        <form method="post" action="/ingresos/{{ i.id }}/eliminar"
+              onsubmit="return confirm('Borrar este ingreso?');">
+          <input type="hidden" name="mes" value="{{ mes_actual }}">
+          <button type="submit" class="link-btn">Borrar</button>
+        </form>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">Sin ingresos registrados este mes.</p>
+  {% endif %}
+</section>
+
+{% endblock %}

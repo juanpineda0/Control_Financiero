@@ -1,5 +1,6 @@
 :root,
 :root[data-theme="dark"] {
+  color-scheme: dark;
   --bg: #0f1115;
   --card: #1a1d24;
   --text: #e8eaed;
@@ -28,6 +29,7 @@
 }
 
 :root[data-theme="light"] {
+  color-scheme: light;
   --bg: #fdf4fb;
   --card: #ffffff;
   --text: #3a2145;
@@ -139,7 +141,6 @@ h2 { font-size: 1.05rem; margin: 0 0 12px; }
 .check input { width: auto; }
 
 input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; }
-:root[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
 
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
@@ -334,7 +335,14 @@ input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
   border-radius: 10px;
 }
 
-.budget-pct { font-size: 0.78rem; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+.budget-pct {
+  font-size: 0.78rem;
+  padding: 2px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+  background: var(--border);
+  color: var(--text);
+}
 .budget-pct.is-verde { background: var(--ok-bg); color: var(--ok); }
 .budget-pct.is-amarillo { background: rgba(234, 179, 8, 0.16); color: #b45309; }
 .budget-pct.is-rojo { background: var(--error-bg); color: var(--error); }
@@ -345,6 +353,7 @@ input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
 .goal-progress-fill.is-rojo { background: var(--error); }
 
 .is-over { color: var(--error); }
+.is-favor { color: var(--ok); }
 
 .month-picker[hidden] { display: none; }
 .month-picker {
@@ -464,3 +473,26 @@ input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
   font-size: 0.82rem;
 }
 .anio-select a.active { background: var(--accent); color: var(--accent-text); font-weight: 600; }
+
+/* Cuentas (settle-up): veredicto grande y pase rapido */
+.verdict { text-align: center; font-size: 1.05rem; margin: 8px 0 14px; }
+.verdict strong { font-size: 1.3rem; }
+.verdict-actions { display: flex; justify-content: center; margin-bottom: 6px; }
+/* variante de .form en fila: los inputs heredan el estilo visual de `.form input` */
+.quick-form {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.quick-form input { flex: 1 1 130px; min-width: 0; }
+.quick-form .chip-btn { white-space: nowrap; }
+
+.settle-detail { margin: 8px 0 0; font-size: 0.82rem; color: var(--muted); }
+.settle-saldo { margin: 10px 0 0; font-size: 0.95rem; }
+.settle-saldo strong { font-size: 1.1rem; font-weight: 700; }
+
+.section-divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }

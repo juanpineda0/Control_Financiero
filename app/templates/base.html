@@ -26,6 +26,8 @@
   {% if user %}
   <nav class="tabbar">
     <a href="/" class="tab {% if active_tab == 'gastos' %}active{% endif %}">Gastos</a>
+    <a href="/ingresos" class="tab {% if active_tab == 'ingresos' %}active{% endif %}">Ingresos</a>
+    <a href="/cuentas" class="tab {% if active_tab == 'cuentas' %}active{% endif %}">Cuentas</a>
     <a href="/ahorros" class="tab {% if active_tab == 'ahorros' %}active{% endif %}">Ahorros</a>
     <a href="/presupuesto" class="tab {% if active_tab == 'presupuesto' %}active{% endif %}">Presupuesto</a>
     <a href="/stats" class="tab {% if active_tab == 'stats' %}active{% endif %}">Stats</a>

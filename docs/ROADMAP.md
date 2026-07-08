@@ -15,9 +15,9 @@ la sección "Convenciones" de abajo. Al terminarla: marcar el checkbox, actualiz
 - [x] Sesión 1 — Base: navegación, método de pago, editar/borrar, vista mensual
 - [x] Sesión 2 — Ahorros: metas y aportes
 - [x] Sesión 3 — Presupuestos
-- [x] Sesión 4 — Estadísticas
+- [ ] Sesión 4 — Estadísticas (**ahora depende de la Sesión 6**, ver nota abajo)
 - [x] Sesión 5 — Importar histórico del Excel (flexible: requiere solo la 1 y la 2)
-- [ ] Sesión 6 — Ingresos y settle-up
+- [x] Sesión 6 — Ingresos y settle-up
 - [ ] Sesión 7 — Día a día: ¿me ahorro por llevar comida al trabajo?
 
 ## Decisiones de diseño ya tomadas
@@ -104,13 +104,15 @@ La fundación que las demás fases necesitan.
 - Verificación: definir 2–3 límites, registrar gastos que crucen los umbrales, ver el
   semáforo cambiar.
 
-## Sesión 4 — Estadísticas (hecha)
+## Sesión 4 — Estadísticas (parcial: depende de la Sesión 6 para cerrarse)
 
-`/stats?mes=`: hero con el total del mes + Δ vs mes anterior, KPIs (promedio diario,
-proyección de cierre al ritmo actual), gasto por día (Chart.js), gasto por categoría,
-comparativa vs mes anterior por categoría (Chart.js, barra divergente rojo/verde),
-gasto por persona, compartido vs no compartido, **por método de pago** (cuánto fue a
-tarjeta de crédito), **por quincena** (1–15 / 16–fin), top 10 gastos (tabla).
+**Ya implementado** (`/stats?mes=`): hero con el total del mes + Δ vs mes anterior,
+KPIs (promedio diario, proyección de cierre al ritmo actual), gasto por día (Chart.js),
+gasto por categoría, comparativa vs mes anterior por categoría (Chart.js, barra
+divergente rojo/verde), gasto por persona, compartido vs no compartido, **por método de
+pago** (cuánto fue a tarjeta de crédito), **por quincena** (1–15 / 16–fin), top 10
+gastos (tabla). Vista año (`/stats/anio?anio=`): barras por mes (Chart.js) + tabla de
+promedio mensual por categoría, con selector de años reales.
 
 **Decisión de diseño (distinta del plan original): sin donut.** Se sigue la guia de la
 skill `dataviz` del repo: un donut/pie no es buena forma para >6 categorías ni para
@@ -119,12 +121,23 @@ horizontales ordenadas (magnitud, un solo hue secuencial), igual de "bello" pero
 legible con las 13 categorías de la app. La paleta categórica (`--series-1..8` en
 `styles.css`, luz/oscuro) es la paleta de referencia validada CVD de esa skill.
 
-Vista año (`/stats/anio?anio=`): barras por mes (Chart.js) + tabla de promedio mensual
-por categoría. Selector de años con datos reales (reusa el patron de `meses_con_datos`).
-
 `app/services/stats.py`: funciones puras (lista de gastos → agregados). Verificación
 hecha: totales de varios meses comparados contra la app real, coinciden con lo
 importado del Excel en la Sesión 5.
+
+**Pendiente antes de dar la fase por terminada (todavia NO implementado, solo anotado):**
+esta fase pasa a depender de que exista la Sesión 6 (Ingresos), porque faltan:
+
+- **Gráficos relacionados a ingresos**: ingresos vs gastos del mes, % de ahorro
+  ((ingresos − gastos) / ingresos), y como se ve el gasto de cada quien contra lo que
+  gana cada quien.
+- **Gasto compartido vs propio**, cruzado con ingresos/reparto — no solo el total
+  compartido/no-compartido que ya existe hoy (eso se queda), sino algo mas parecido a
+  lo que va a calcular `/cuentas` en la Sesión 6 (cuota justa segun proporcion de
+  ingresos vs lo que realmente pago cada quien).
+
+Cuando la Sesión 6 este lista, volver aqui, agregar esos graficos/KPIs con los datos
+reales de `incomes`, y recien ahi marcar el checkbox de esta fase.
 
 ## Sesión 5 — Importar el histórico del Excel (hecha)
 
@@ -158,21 +171,33 @@ aportes) y omitiendo lo que ya exista, en vez de borrar por `source='excel'`.
 
 ## Sesión 6 — Ingresos y settle-up
 
+**Nota:** al terminar esta sesión, falta volver a la Sesión 4 (Estadísticas) a agregar
+los gráficos de ingresos y de gasto compartido/propio que quedaron pendientes ahi.
+
 - SQL:
   - `incomes`: id uuid pk, occurred_on date, amount bigint, user_name text, kind text
     check in ('Sueldo','Extra') default 'Sueldo', description text null, created_at.
+  - `transfers`: id uuid pk, occurred_on date, amount bigint, from_user text, to_user
+    text, note text null, created_at. Son los pases de plata entre los dos durante el
+    mes (ej. los viernes de pago); **no cuentan como ingresos** (no entran en la
+    proporción del reparto: sería contar la plata dos veces).
   - `settlements`: id uuid pk, month date, from_user text, to_user text, amount bigint,
     settled_at timestamptz.
-- `/ingresos`: formulario (fecha, monto, tipo, descripción) + lista del mes + total por
-  persona; editar/borrar.
+- `/ingresos`: formulario (fecha, monto, tipo, descripción, de quién) + lista del mes +
+  total por persona; editar/borrar.
 - **Proporción del mes** = ingresos de cada uno / total del mes. Si el mes no tiene
   ingresos registrados, usar la proporción del último mes que sí tenga.
 - `/cuentas?mes=`: gastos compartidos del mes × proporción = cuota justa de cada uno; se
-  compara contra lo que realmente pagó cada uno → "X le debe $Y a Z". Botón "marcar
-  saldado" (inserta en `settlements`); los meses saldados quedan marcados.
+  compara contra lo que realmente pagó cada uno **y lo que ya se transfirieron entre
+  ellos** → "X le debe $Y a Z". En la misma página: formulario para registrar
+  transferencias del mes y su lista (borrar). Botón "marcar saldado" (inserta en
+  `settlements` la deuda restante); los meses saldados quedan marcados. **Liquidación en
+  cero**: al saldar se asume que se pagó la diferencia y cada mes arranca de cero (el
+  sobrante/faltante no se arrastra).
 - Stat extra: % de ahorro del mes = (ingresos − gastos) / ingresos.
-- Verificación: mes de prueba con ingresos de ambos y gastos compartidos desbalanceados →
-  validar la deuda contra una cuenta a mano; saldar y verificar el estado.
+- Verificación: mes de prueba con ingresos de ambos, gastos compartidos desbalanceados y
+  transferencias → validar la deuda contra una cuenta a mano; saldar y verificar el
+  estado.
 
 ## Sesión 7 — Día a día: ¿me ahorro por llevar comida al trabajo?
 
