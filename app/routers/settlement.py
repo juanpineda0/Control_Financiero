@@ -59,7 +59,7 @@ def _rango(tabla: str, start, end, columnas: str = "*") -> list[dict[str, Any]]:
     )
 
 
-def _ingresos_para_proporcion(year: int, month: int) -> tuple[list[dict[str, Any]], str | None]:
+def ingresos_para_proporcion(year: int, month: int) -> tuple[list[dict[str, Any]], str | None]:
     """Ingresos con los que se calcula la proporcion del mes. Si el mes no tiene,
     usa el ultimo mes anterior que si tenga; devuelve (ingresos, label del mes
     usado o None si es el mismo).
@@ -97,7 +97,7 @@ def _datos_cuentas(year: int, month: int) -> dict[str, Any]:
     total_compartido = sum(int(g["amount"]) for g in compartidos)
 
     ingresos_mes = _rango("incomes", start, end)
-    ingresos_prop, mes_proporcion = _ingresos_para_proporcion(year, month)
+    ingresos_prop, mes_proporcion = ingresos_para_proporcion(year, month)
     ingresos_por_persona = totales_por_persona(ingresos_prop)
     props = proporciones(ingresos_por_persona)
 

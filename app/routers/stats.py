@@ -16,10 +16,18 @@ from ..dates import (
     today_bogota,
 )
 from ..db import get_supabase
+from ..services.settlement import (
+    cuotas_justas,
+    pct_ahorro,
+    proporciones,
+    totales_por_persona,
+)
 from ..services.stats import (
     compartido_vs_no,
+    cuota_vs_pagado,
     delta_por_categoria,
     dias_transcurridos_mes,
+    gasto_vs_ingreso_por_persona,
     por_categoria,
     por_dia,
     por_metodo_pago,
@@ -33,6 +41,7 @@ from ..services.stats import (
     total_por_mes,
 )
 from ..templating import templates
+from .settlement import ingresos_para_proporcion
 
 router = APIRouter()
 
@@ -83,6 +92,33 @@ def stats_mes(request: Request, mes: str | None = None):
     total_anterior = total_gastado(gastos_mes_anterior)
     dias_transcurridos = dias_transcurridos_mes(hoy, year, month, dias_totales)
 
+    # ingresos del mes (para ingresos vs gastos y gasto vs ingreso por persona)
+    ingresos_mes = cast(
+        "list[dict[str, Any]]",
+        supa.table("incomes")
+        .select("amount, user_name")
+        .gte("occurred_on", start.isoformat())
+        .lte("occurred_on", end.isoformat())
+        .execute()
+        .data,
+    )
+    total_ingresos = sum(int(i["amount"]) for i in ingresos_mes)
+
+    # reparto de lo compartido: misma proporcion que usa /cuentas (con fallback
+    # al ultimo mes con ingresos si este mes no tiene)
+    ingresos_prop, mes_proporcion = ingresos_para_proporcion(year, month)
+    props = proporciones(totales_por_persona(ingresos_prop))
+    compartidos = [g for g in gastos_mes if g["is_shared"]]
+    total_compartido = total_gastado(compartidos)
+    reparto = (
+        cuota_vs_pagado(
+            totales_por_persona(compartidos),
+            cuotas_justas(total_compartido, props),
+        )
+        if props
+        else []
+    )
+
     cat_actual = por_categoria(gastos_mes)
     cat_anterior = por_categoria(gastos_mes_anterior)
     deltas = delta_por_categoria(cat_actual, cat_anterior)
@@ -119,7 +155,19 @@ def stats_mes(request: Request, mes: str | None = None):
             "dia_labels": list(range(1, dias_totales + 1)),
             "dia_data": por_dia(gastos_mes, dias_totales),
             "por_persona": por_persona(gastos_mes),
+            "total_ingresos": total_ingresos,
+            "balance": total_ingresos - total,
+            "pct_ahorro": pct_ahorro(total_ingresos, total),
+            "persona_ingreso": gasto_vs_ingreso_por_persona(
+                gastos_mes, totales_por_persona(ingresos_mes)
+            ),
             "compartido": compartido_vs_no(gastos_mes),
+            "total_compartido": total_compartido,
+            "reparto": reparto,
+            "reparto_max": max(
+                (v for f in reparto for v in (f["pagado"], f["cuota"])), default=0
+            ),
+            "mes_proporcion": mes_proporcion,
             "por_metodo": por_metodo_pago(gastos_mes),
             "por_quincena": por_quincena(gastos_mes),
             "top10": top_gastos(gastos_mes, 10),

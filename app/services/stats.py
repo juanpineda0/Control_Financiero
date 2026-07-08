@@ -106,6 +106,50 @@ def top_gastos(gastos: list[dict[str, Any]], n: int = 10) -> list[dict[str, Any]
     return sorted(gastos, key=lambda g: int(g["amount"]), reverse=True)[:n]
 
 
+def gasto_vs_ingreso_por_persona(
+    gastos: list[dict[str, Any]], ingresos_por_persona: dict[str, int]
+) -> list[dict[str, Any]]:
+    """Filas {persona, ingreso, gastado, pct} donde pct = gastado / ingreso * 100
+    (None si la persona no tiene ingresos ese mes), ordenadas por gasto desc."""
+    gastado: dict[str, int] = {}
+    for g in gastos:
+        nombre = g["user_name"]
+        gastado[nombre] = gastado.get(nombre, 0) + int(g["amount"])
+    personas = set(gastado) | set(ingresos_por_persona)
+    filas = [
+        {
+            "persona": p,
+            "ingreso": ingresos_por_persona.get(p, 0),
+            "gastado": gastado.get(p, 0),
+            "pct": (
+                gastado.get(p, 0) / ingresos_por_persona[p] * 100
+                if ingresos_por_persona.get(p, 0) > 0
+                else None
+            ),
+        }
+        for p in personas
+    ]
+    filas.sort(key=lambda f: f["gastado"], reverse=True)
+    return filas
+
+
+def cuota_vs_pagado(
+    pagado: dict[str, int], cuotas: dict[str, int]
+) -> list[dict[str, Any]]:
+    """Filas {persona, pagado, cuota, delta} del gasto compartido: lo que pago cada
+    quien vs su cuota justa segun proporcion de ingresos. delta > 0 = puso de mas."""
+    personas = sorted(set(pagado) | set(cuotas))
+    return [
+        {
+            "persona": p,
+            "pagado": pagado.get(p, 0),
+            "cuota": cuotas.get(p, 0),
+            "delta": pagado.get(p, 0) - cuotas.get(p, 0),
+        }
+        for p in personas
+    ]
+
+
 def total_por_mes(gastos_del_ano: list[dict[str, Any]]) -> list[int]:
     """Lista de largo 12, indice 0 = enero."""
     totales = [0] * 12

@@ -15,10 +15,10 @@ la sección "Convenciones" de abajo. Al terminarla: marcar el checkbox, actualiz
 - [x] Sesión 1 — Base: navegación, método de pago, editar/borrar, vista mensual
 - [x] Sesión 2 — Ahorros: metas y aportes
 - [x] Sesión 3 — Presupuestos
-- [ ] Sesión 4 — Estadísticas (**ahora depende de la Sesión 6**, ver nota abajo)
+- [x] Sesión 4 — Estadísticas (cerrada: los gráficos de ingresos se agregaron después de la Sesión 6)
 - [x] Sesión 5 — Importar histórico del Excel (flexible: requiere solo la 1 y la 2)
 - [x] Sesión 6 — Ingresos y settle-up
-- [ ] Sesión 7 — Día a día: ¿me ahorro por llevar comida al trabajo?
+- [ ] Sesión 7 — Día a día: análisis con IA por fuera de la app (**sin código**, ver nota en la sección)
 
 ## Decisiones de diseño ya tomadas
 
@@ -39,13 +39,13 @@ la sección "Convenciones" de abajo. Al terminarla: marcar el checkbox, actualiz
 
 - Mismo stack: FastAPI + Jinja2 SSR, formularios POST, sin build step ni framework JS.
   Chart.js por CDN únicamente en las páginas de estadísticas.
-- **Rutas**: mover a `app/routers/` (expenses, savings, budgets, stats, incomes, habits)
+- **Rutas**: mover a `app/routers/` (expenses, savings, budgets, stats, incomes)
   con `APIRouter`; `app/main.py` queda como ensamblador (app, static, templates,
   `include_router`, `/health`). Cálculos en `app/services/` como funciones puras
   (se trae el mes completo de Supabase y se agrega en Python: con 2 usuarios el volumen
   es mínimo, no hacen falta funciones SQL ni RPC).
 - **Navegación**: tabs móvil-first en `base.html`: Gastos | Ahorros | Presupuesto |
-  Stats | Más (ingresos, cuentas, hábitos). La app se usa desde el celular.
+  Stats | Más (ingresos, cuentas). La app se usa desde el celular.
 - **Zona horaria**: `date.today()` en Vercel es UTC → de noche en Colombia marca el día
   siguiente. Usar `ZoneInfo("America/Bogota")` y agregar `tzdata` a requirements.
 - **Formato COP**: filtro Jinja `cop` → `$1.234.567` (puntos de miles).
@@ -104,9 +104,9 @@ La fundación que las demás fases necesitan.
 - Verificación: definir 2–3 límites, registrar gastos que crucen los umbrales, ver el
   semáforo cambiar.
 
-## Sesión 4 — Estadísticas (parcial: depende de la Sesión 6 para cerrarse)
+## Sesión 4 — Estadísticas (hecha; se cerró después de la Sesión 6)
 
-**Ya implementado** (`/stats?mes=`): hero con el total del mes + Δ vs mes anterior,
+**Implementado** (`/stats?mes=`): hero con el total del mes + Δ vs mes anterior,
 KPIs (promedio diario, proyección de cierre al ritmo actual), gasto por día (Chart.js),
 gasto por categoría, comparativa vs mes anterior por categoría (Chart.js, barra
 divergente rojo/verde), gasto por persona, compartido vs no compartido, **por método de
@@ -125,19 +125,23 @@ legible con las 13 categorías de la app. La paleta categórica (`--series-1..8`
 hecha: totales de varios meses comparados contra la app real, coinciden con lo
 importado del Excel en la Sesión 5.
 
-**Pendiente antes de dar la fase por terminada (todavia NO implementado, solo anotado):**
-esta fase pasa a depender de que exista la Sesión 6 (Ingresos), porque faltan:
+**Cierre (jul 2026), con la Sesión 6 ya hecha** — se agregaron las secciones que
+dependían de `incomes`, todas como barras HTML (sin más Chart.js):
 
-- **Gráficos relacionados a ingresos**: ingresos vs gastos del mes, % de ahorro
-  ((ingresos − gastos) / ingresos), y como se ve el gasto de cada quien contra lo que
-  gana cada quien.
-- **Gasto compartido vs propio**, cruzado con ingresos/reparto — no solo el total
-  compartido/no-compartido que ya existe hoy (eso se queda), sino algo mas parecido a
-  lo que va a calcular `/cuentas` en la Sesión 6 (cuota justa segun proporcion de
-  ingresos vs lo que realmente pago cada quien).
+- **Ingresos vs gastos** del mes (dos barras de magnitud) + **% de ahorro**
+  ((ingresos − gastos) / ingresos) con el balance en plata.
+- **Gasto vs ingreso por persona**: barra tipo "meter" de lo gastado como parte del
+  ingreso de cada quien (rojo si gasta más de lo que gana).
+- **Reparto de lo compartido**: cuota justa (según proporción de ingresos, misma
+  lógica y mismo fallback de mes que `/cuentas` — se reutiliza
+  `ingresos_para_proporcion` y `app/services/settlement.py`) vs lo que realmente
+  pagó cada quien, con el delta "puso $X de más/de menos" y link al settle-up.
 
-Cuando la Sesión 6 este lista, volver aqui, agregar esos graficos/KPIs con los datos
-reales de `incomes`, y recien ahi marcar el checkbox de esta fase.
+Los cálculos nuevos son funciones puras en `app/services/stats.py`
+(`gasto_vs_ingreso_por_persona`, `cuota_vs_pagado`). Verificación hecha: cuentas a
+mano de proporciones/cuotas/deltas + render real de junio 2026 (ahorro 50,4%, las
+cuotas suman exacto el total compartido); meses sin ingresos o sin datos muestran
+mensajes vacíos con link a `/ingresos` en vez de romperse.
 
 ## Sesión 5 — Importar el histórico del Excel (hecha)
 
@@ -171,8 +175,9 @@ aportes) y omitiendo lo que ya exista, en vez de borrar por `source='excel'`.
 
 ## Sesión 6 — Ingresos y settle-up
 
-**Nota:** al terminar esta sesión, falta volver a la Sesión 4 (Estadísticas) a agregar
-los gráficos de ingresos y de gasto compartido/propio que quedaron pendientes ahi.
+**Nota:** al terminar esta sesión se volvió a la Sesión 4 (Estadísticas) y se
+agregaron los gráficos de ingresos y de gasto compartido/propio que quedaban ahí
+(ya hecho, ver la Sesión 4).
 
 - SQL:
   - `incomes`: id uuid pk, occurred_on date, amount bigint, user_name text, kind text
@@ -201,27 +206,19 @@ los gráficos de ingresos y de gasto compartido/propio que quedaron pendientes a
 
 ## Sesión 7 — Día a día: ¿me ahorro por llevar comida al trabajo?
 
-Contexto real: uno de los dos recibe el almuerzo en su trabajo; el otro va a la oficina
-solo algunos días y suele comprar mecato/desayunos y a veces almuerzo. La pregunta a
-responder: ¿llevar comida hecha ahorra de verdad, y cuánto? (para decidir si vale el
-tiempo de cocinar). La medición usa **datos reales**, no solo estimados:
+**Decisión (jul 2026): esta sesión NO se implementa en la app.** La pregunta se va a
+responder con un análisis hecho con IA por fuera del código (conversación/análisis sobre
+los datos ya registrados), no con tablas ni pantallas nuevas. En la app no se agrega SQL,
+rutas ni UI por esta sesión; el checkbox se marca cuando ese análisis externo esté hecho.
 
-- SQL: `office_days`: id uuid pk, day date, user_name text, brought_food boolean,
-  note text null, unique(day, user_name).
-- Check-in de 5 segundos en `/` (colapsable): "¿Hoy oficina?" → sí + "¿Llevaste comida?".
-- Cruce: gasto del usuario en categorías de comida (constante configurable: `Mecato`,
-  `Comida fuera`) en cada día de oficina.
-- `/habitos` (o sección en Stats): promedio gastado en días que llevó vs días que no →
-  ahorro real por día × días que llevó = "este mes te ahorraste ~$X por llevar comida";
-  racha actual de días llevando; tabla de días de oficina del mes con su gasto.
-- Si hay pocos días "no llevé" para comparar, usar presets estimados como contrafactual
-  (constantes editables, p. ej. desayuno ~$8.000, almuerzo ~$18.000, mecato ~$5.000),
-  marcándolo como "estimado".
-- Extra opcional: botón genérico de "gasto evitado" (antojo que no compraste, con monto
-  estimado) que suma al ahorro del mes y opcionalmente "abona" simbólicamente a una meta
-  (idea de apps tipo Skip / No Spend Streak / NoBuy).
-- Verificación: simular una semana (3 días de oficina, 2 llevando comida) con gastos
-  reales y validar el cálculo a mano.
+Contexto real (sigue vigente como insumo del análisis): uno de los dos recibe el almuerzo
+en su trabajo; el otro va a la oficina solo algunos días y suele comprar mecato/desayunos
+y a veces almuerzo. La pregunta a responder: ¿llevar comida hecha ahorra de verdad, y
+cuánto? (para decidir si vale el tiempo de cocinar).
+
+El plan original de implementación (tabla `office_days`, check-in en `/`, `/habitos`,
+presets de contrafactual, botón de "gasto evitado") queda descartado de esta fase; si
+algún día se quiere medir dentro de la app, esas ideas pasan al backlog de abajo.
 
 ## Backlog (después de las 7 sesiones)
 
@@ -232,6 +229,11 @@ tiempo de cocinar). La medición usa **datos reales**, no solo estimados:
 - Categorías en BD editables desde la UI (lo anticipa el docstring de `categories.py`).
 - Presupuesto con override por mes puntual; rollover estilo YNAB.
 - Vista de avance de las cuotas de la casa (proyectado vs pagado).
+- Medición de hábitos dentro de la app (lo que era la Sesión 7 original): tabla
+  `office_days`, check-in "¿Hoy oficina? ¿Llevaste comida?" en `/`, cruce con gasto en
+  categorías de comida, `/habitos` con ahorro real por llevar comida, presets estimados
+  como contrafactual y botón de "gasto evitado". Solo si el análisis externo con IA se
+  queda corto.
 
 ## Convenciones (aplican a TODAS las sesiones)
 
@@ -251,8 +253,7 @@ tiempo de cocinar). La medición usa **datos reales**, no solo estimados:
 
 ## Verificación end-to-end (al completar todo)
 
-1. Flujo diario desde el celular: registrar gasto con método de pago → check-in de
-   oficina.
+1. Flujo diario desde el celular: registrar gasto con método de pago.
 2. Flujo mensual: registrar ingresos → revisar presupuesto (semáforos) → stats del mes →
    cuentas y saldar → aportar a metas.
 3. Totales de stats del histórico importado == celda "Total" de cada hoja del Excel.

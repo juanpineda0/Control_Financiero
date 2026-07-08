@@ -37,6 +37,46 @@
   </div>
 </section>
 
+<section class="card">
+  <h2>Ingresos vs gastos</h2>
+  {% if total_ingresos > 0 %}
+  {% set max_iv = [total_ingresos, total] | max %}
+  <div class="bar-list">
+    <div class="bar-row">
+      <div class="bar-row-top">
+        <span class="bar-name">Ingresos</span>
+        <span class="bar-value">{{ total_ingresos | cop }}</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width: {{ total_ingresos / max_iv * 100 }}%"></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-row-top">
+        <span class="bar-name">Gastos</span>
+        <span class="bar-value">{{ total | cop }}</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width: {{ total / max_iv * 100 if max_iv > 0 else 0 }}%"></div>
+      </div>
+    </div>
+  </div>
+  {% if pct_ahorro is not none %}
+  {% if balance >= 0 %}
+  <p class="stat-note">Ahorro del mes: <strong class="is-favor">{{ pct_ahorro | round(1) }}%</strong>
+    ({{ balance | cop }} que no se gastaron)</p>
+  {% else %}
+  <p class="stat-note">Este mes se gasto <strong class="is-over">{{ (-balance) | cop }}</strong>
+    mas de lo que entro ({{ pct_ahorro | round(1) }}% de ahorro)</p>
+  {% endif %}
+  {% endif %}
+  {% else %}
+  <p class="muted">Sin ingresos registrados este mes.
+    <a href="/ingresos?mes={{ mes_actual }}">Registralos en Ingresos</a> para ver el
+    balance y el % de ahorro.</p>
+  {% endif %}
+</section>
+
 <section class="card chart-card">
   <h2>Gasto por dia</h2>
   <div class="chart-wrap">
@@ -88,8 +128,84 @@
 </section>
 
 <section class="card">
+  <h2>Gasto vs ingreso por persona</h2>
+  {% if total_ingresos > 0 %}
+  <div class="bar-list">
+    {% for f in persona_ingreso %}
+    <div class="bar-row">
+      <div class="bar-row-top">
+        <span class="bar-name">{{ f.persona }}</span>
+        {% if f.pct is not none %}
+        <span class="bar-value">{{ f.gastado | cop }} de {{ f.ingreso | cop }} &middot;
+          <strong class="{% if f.pct > 100 %}is-over{% endif %}">{{ f.pct | round | int }}%</strong></span>
+        {% else %}
+        <span class="bar-value">{{ f.gastado | cop }} &middot; sin ingresos este mes</span>
+        {% endif %}
+      </div>
+      <div class="bar-track">
+        {% if f.pct is not none %}
+        <div class="bar-fill {% if f.pct > 100 %}is-rojo{% endif %}" style="width: {{ [f.pct, 100] | min }}%"></div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <p class="stat-note">La barra es lo gastado como parte del ingreso de cada quien
+    (segun lo que pago cada uno, incluidos gastos compartidos).</p>
+  {% else %}
+  <p class="muted">Sin ingresos registrados este mes.
+    <a href="/ingresos?mes={{ mes_actual }}">Registralos en Ingresos</a> para comparar
+    el gasto de cada quien contra lo que gana.</p>
+  {% endif %}
+</section>
+
+<section class="card">
   <h2>Compartido vs no compartido</h2>
   {{ m.split_bar(compartido, ["var(--series-1)", "var(--series-3)"]) }}
+</section>
+
+<section class="card">
+  <h2>Reparto de lo compartido <small>cuota justa vs pagado</small></h2>
+  {% if not reparto %}
+  <p class="muted">Sin ingresos registrados (ni en meses anteriores) no hay proporcion
+    para repartir. <a href="/ingresos?mes={{ mes_actual }}">Registra los ingresos</a>.</p>
+  {% elif total_compartido <= 0 %}
+  <p class="muted">Sin gastos compartidos este mes.</p>
+  {% else %}
+  {% if mes_proporcion %}
+  <p class="stat-note">Proporcion tomada de los ingresos de {{ mes_proporcion }}
+    (este mes no tiene registrados).</p>
+  {% endif %}
+  <div class="bar-list">
+    {% for f in reparto %}
+    <div class="reparto-persona">
+      <div class="bar-row-top">
+        <span class="bar-name">{{ f.persona }}</span>
+        <span class="bar-value">
+          {% if f.delta > 0 %}<strong class="is-favor">puso {{ f.delta | cop }} de mas</strong>
+          {% elif f.delta < 0 %}<strong class="is-over">puso {{ (-f.delta) | cop }} de menos</strong>
+          {% else %}pago justo su cuota{% endif %}
+        </span>
+      </div>
+      <div class="bar-row-top">
+        <span class="bar-name reparto-sub">Pago</span>
+        <span class="bar-value">{{ f.pagado | cop }}</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width: {{ f.pagado / reparto_max * 100 if reparto_max > 0 else 0 }}%"></div>
+      </div>
+      <div class="bar-row-top">
+        <span class="bar-name reparto-sub">Cuota justa</span>
+        <span class="bar-value">{{ f.cuota | cop }}</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width: {{ f.cuota / reparto_max * 100 if reparto_max > 0 else 0 }}%; background: var(--series-3);"></div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <a class="back-link" href="/cuentas?mes={{ mes_actual }}">Ver el settle-up completo (con transferencias) &rarr;</a>
+  {% endif %}
 </section>
 
 <section class="card">

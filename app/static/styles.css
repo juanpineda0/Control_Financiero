@@ -437,6 +437,11 @@ input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
 .bar-row-top .bar-value { color: var(--muted); white-space: nowrap; }
 .bar-track { height: 8px; background: var(--border); border-radius: 999px; overflow: hidden; margin-top: 5px; }
 .bar-fill { height: 100%; border-radius: 999px; background: var(--series-1); }
+.bar-fill.is-rojo { background: var(--error); }
+
+.reparto-persona { display: flex; flex-direction: column; gap: 2px; }
+.reparto-persona > .bar-row-top:first-child { margin-bottom: 4px; }
+.reparto-sub { color: var(--muted); font-size: 0.78rem; }
 
 .split-bar { display: flex; height: 14px; border-radius: 999px; overflow: hidden; gap: 2px; background: var(--border); }
 .split-bar-seg { height: 100%; }
