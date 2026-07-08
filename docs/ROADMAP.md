@@ -143,6 +143,10 @@ mano de proporciones/cuotas/deltas + render real de junio 2026 (ahorro 50,4%, la
 cuotas suman exacto el total compartido); meses sin ingresos o sin datos muestran
 mensajes vacíos con link a `/ingresos` en vez de romperse.
 
+**Pendiente (otro día, no bloquea la fase):** una pasada de rediseño de los KPIs y
+las gráficas de `/stats` — revisar qué se muestra, en qué orden y con qué forma,
+ahora que están todas las secciones. Está anotado en el backlog.
+
 ## Sesión 5 — Importar el histórico del Excel (hecha)
 
 `scripts/import_excel.py` — script **local** (no corre en Vercel), usa `openpyxl`
@@ -222,7 +226,15 @@ algún día se quiere medir dentro de la app, esas ideas pasan al backlog de aba
 
 ## Backlog (después de las 7 sesiones)
 
-- PWA: manifest + ícono para "agregar a pantalla de inicio".
+- **Rediseño de KPIs y gráficas de `/stats`** (revisión pendiente, anotada al cerrar
+  la Sesión 4): repensar qué KPIs se muestran y en qué orden, unificar el estilo de
+  las secciones (hero, tiles, barras HTML, Chart.js) y podar lo que no se consulte
+  en el uso real. Hacerlo con unas semanas de uso encima, para decidir con datos.
+- **PWA completa**: manifest + ícono para "agregar a pantalla de inicio", **y la
+  lógica de sincronización y manejo offline** — service worker con caché de
+  estáticos y última vista, encolar los POST hechos sin señal (registrar un gasto
+  offline) y reenviarlos al volver la conexión, con cuidado de no duplicar envíos
+  ni pisar datos del otro usuario al sincronizar.
 - Recurrentes con recordatorio (cuota casa, internet, luz): vencimientos + aviso; email
   gratis vía Resend free tier disparado por el cron de GitHub Actions existente.
 - Export CSV del mes/año.
